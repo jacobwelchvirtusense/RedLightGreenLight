@@ -15,9 +15,11 @@ using UnityEngine;
 using Windows.Kinect;
 using Joint = Windows.Kinect.Joint;
 
+using static GameSettings;
 using static GameController;
+using System;
+using UnityEditor.Localization.Plugins.XLIFF.V12;
 
-[RequireComponent(typeof(Animator))]
 public class PlayerMovement : MonoBehaviour
 {
     #region Fields
@@ -27,107 +29,95 @@ public class PlayerMovement : MonoBehaviour
     private bool hasFailedRedLight = false;
 
     /// <summary>
-    /// Holds true if the player has moved
+    /// The size of the player model.
     /// </summary>
-    public bool hasMoved = false;
+    private const float playerSize = 10.0f;
 
-    #region Animations
-    private Animator playerAnimator;
+    private float startingDistance;
+    private float startingZ;
+    private float closestZ = Mathf.Infinity;
 
-    private string walkAnimationTag = "IsWalking";
-    private int walkID;
-    private string hitAnimationTag = "IsHit";
-    private int hitID;
-    #endregion
-    #endregion
-
-    #region Functions
-    #region Initialization
-    /// <summary>
-    /// Performs all actions in the awake event.
-    /// </summary>
-    private void Awake()
-    {
-        InitializeComponents();
-        //InitializeAnimationIDs();
-    }
-
-    /// <summary>
-    /// Initializes all components for the player.
-    /// </summary>
-    private void InitializeComponents()
-    {
-        playerAnimator = GetComponent<Animator>();
-        bodyManager = FindObjectOfType<BodySourceManager>();
-    }
-
-    /// <summary>
-    /// Stores the hashed animation tags (this is more optimized than hashing it every time an animation is used).
-    /// </summary>
-    private void InitializeAnimationIDs()
-    {
-        walkID = Animator.StringToHash(walkAnimationTag);
-        hitID = Animator.StringToHash(hitAnimationTag);
-    }
-    #endregion
-
-    /// <summary>
-    /// Handles the events that should take place with the current state.
-    /// </summary>
-    private void LateUpdate()
-    {
-        if (gameController == null) return;
-
-        switch (gameController.lightState)
-        {
-            case LightState.RED:
-                if (!hasFailedRedLight && gameController.canDetectPenaltyMovement)
-                {
-                    CheckForMovement();
-                }
-                break;
-
-            case LightState.GREEN:
-                gameController.UpdatePoints();
-                MovePlayer();
-                break;
-
-            case LightState.OFF:
-            default:
-                break;
-        }
-
-    }
-
-    private void CheckForMovement()
-    {
-        if (hasMoved)
-        {
-            StartCoroutine(FailRedLight());
-        }
-    }
-
-    /// <summary>
-    /// Handles the event of failing a red light.
-    /// </summary>
-    /// <returns></returns>
-    private IEnumerator FailRedLight()
-    {
-        hasFailedRedLight = true;
-        yield return gameController.FailedRedRoutine();
-        hasFailedRedLight = false;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public void MovePlayer()
-    {
-        //transform.position += transform.forward * Time.deltaTime * 5;
-    }
-    #endregion
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The distance from the sensor where the patient wins")]
+    [SerializeField] private float winningDistance = 0.1f;
 
     #region Movement
+    /// <summary>
+    /// All of the current movements being handled.
+    /// </summary>
+    private Queue<Coroutine> movementRoutines = new Queue<Coroutine>();
+
+    #region Input Thresholds
+    [Header("Inputs")]
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The minimum height a patients foot must be raised by")]
+    [SerializeField] private float minUpHeight = 0.1f;
+
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The maximum height a patients foot may be raised by (limits movementspeed")]
+    [SerializeField] private float maxUpHeight = 0.4f;
+
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The minimum height that a patients foot must be brought down to (registers movement on reaching it)")]
+    [SerializeField] private float minDownHeight = 0.05f;
+    #endregion
+
+    #region Speed
+    [Header("Speed")]
+    [Range(0.0f, 1.0f)]
+    [Tooltip("The amount of time movement lasts for")]
+    [SerializeField] private float movementTime = 0.5f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The amount of time movement lasts for")]
+    [SerializeField] private float minMovementTime = 0.5f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The amount of time movement lasts for")]
+    [SerializeField] private float maxMovementTime = 1.0f;
+
+    [Range(0.0f, 0.5f)]
+    [Tooltip("The amount of time lerping in and out of movement")]
+    [SerializeField] private float movementSmoothTime = 0.2f;
+
+    [Range(0.0f, 20.0f)]
+    [Tooltip("The speed of the player when moving")]
+    [SerializeField]
+    private float movementSpeed = 7.0f;
+
+    private float currentMovementSpeed = 0.0f;
+
+    /*
+    [Range(0.0f, 20.0f)]
+    [Tooltip("The minimum speed used")]
+    [SerializeField] private float minMovementSpeed = 5.0f;
+
+    [Range(0.0f, 20.0f)]
+    [Tooltip("The maximum speed used")]
+    [SerializeField] private float maxMovementSpeed = 5.0f;*/
+    #endregion
+    #endregion
+
+    #region Animations
+    /// <summary>
+    /// The animator for the player model.
+    /// </summary>
+    private Animator playerAnimator;
+
+    // Animator ID for when the player is moving
+    private string walkAnimationTag = "IsWalking";
+    private int walkID;
+
+    // Animator ID for failing a red light in the stationary mode
+    private string hitAnimationTag = "IsHit";
+    private int hitID;
+
+    // Animator ID for failing a red light in the race mode
+    private string deathAnimationTag = "IsDead";
+    private int deathID;
+    #endregion
+
+    #region Kinnect
     public Material BoneMaterial;
 
     private Dictionary<ulong, GameObject> _Bodies = new Dictionary<ulong, GameObject>();
@@ -164,34 +154,78 @@ public class PlayerMovement : MonoBehaviour
         { JointType.SpineShoulder, JointType.Neck },
         { JointType.Neck, JointType.Head },
     };
+
     private List<JointType> joints = new List<JointType>
     {
-        JointType.FootLeft,
-        JointType.FootRight
+        JointType.AnkleLeft,
+        JointType.AnkleRight
     };
 
-    private float playerSize = 10.0f;
+    private bool footLowLocked = false;
+    private Dictionary<JointType, float> footLow = new Dictionary<JointType, float>();
+    private Dictionary<JointType, float> footHeight = new Dictionary<JointType, float>();
+    #endregion
+    #endregion
 
+    #region Functions
+    #region Initialization
+    /// <summary>
+    /// Performs all actions in the awake event.
+    /// </summary>
+    private void Awake()
+    {
+        startingZ = transform.position.z;
 
-    [SerializeField] private float minUpHeight = 0.1f;
-    [SerializeField] private float maxUpHeight = 0.4f;
+        InitializeComponents();
+        InitializeDictionaries();
+        InitializeAnimationIDs();
+    }
 
-    [SerializeField] private float minDownHeight = 0.05f;
+    /// <summary>
+    /// Initializes all components for the player.
+    /// </summary>
+    private void InitializeComponents()
+    {
+        playerAnimator = GetComponentInChildren<Animator>();
+        bodyManager = FindObjectOfType<BodySourceManager>();
+    }
 
-    private bool footUp = false;
-    JointType currentFoot = JointType.FootLeft;
+    private void InitializeDictionaries()
+    {
+        foreach(JointType joint in joints)
+        {
+            footHeight.Add(joint, 0.0f);
+            footLow.Add(joint, Mathf.Infinity);
+        }
+    }
 
-    void Update()
+    /// <summary>
+    /// Stores the hashed animation tags (this is more optimized than hashing it every time an animation is used).
+    /// </summary>
+    private void InitializeAnimationIDs()
+    {
+        walkID = Animator.StringToHash(walkAnimationTag);
+        hitID = Animator.StringToHash(hitAnimationTag);
+        deathID = Animator.StringToHash(deathAnimationTag);
+    }
+    #endregion
+
+    #region Input Handling
+    /// <summary>
+    /// Updates game from Kinnect data.
+    /// </summary>
+    private void FixedUpdate()
     {
         #region Get Kinect Data
         if (bodyManager == null) return;
-        Body[] data = bodyManager.GetData();
 
-        if (data == null) return;
+        Body[] _data = bodyManager.GetData();
+
+        if (_data == null) return;
 
         List<ulong> _trackedIds = new List<ulong>();
 
-        foreach (var body in data)
+        foreach (var body in _data)
         {
             if (body == null) continue;
 
@@ -199,11 +233,10 @@ public class PlayerMovement : MonoBehaviour
         }
         #endregion
 
-        #region Delete Kinect Bodies
-        List<ulong> knownIds = new List<ulong>(_Bodies.Keys);
+        #region Delete Untracked Bodies
+        List<ulong> _knownIds = new List<ulong>(_Bodies.Keys);
 
-        // First delete untracked bodies
-        foreach (ulong trackingId in knownIds)
+        foreach (ulong trackingId in _knownIds)
         {
             if (!_trackedIds.Contains(trackingId))
             {
@@ -213,18 +246,17 @@ public class PlayerMovement : MonoBehaviour
         }
         #endregion
 
-        #region Create Kinect Bodies
-        foreach (var body in data)
+        #region Create & Refresh Kinect Bodies
+        foreach (var body in _data)
         {
-            if (body == null)
-            {
-                continue;
-            }
+            if (body == null) continue;
 
             if (body.IsTracked)
             {
                 if (!_Bodies.ContainsKey(body.TrackingId))
                 {
+                    var startingPosition = body.Joints[JointType.SpineBase].Position;
+                    startingDistance = Length(startingPosition);
                     _Bodies[body.TrackingId] = CreateBodyObject(body.TrackingId);
                 }
 
@@ -232,8 +264,15 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         #endregion
+
+        if (CurrentGameMode == GameMode.STATIONARY) UpdatePlayerPositionStationary();
     }
 
+    /// <summary>
+    /// Creates the body in the scene.
+    /// </summary>
+    /// <param name="id">The id of the body to be created.</param>
+    /// <returns></returns>
     private GameObject CreateBodyObject(ulong id)
     {
         GameObject body = new GameObject("Body:" + id);
@@ -258,8 +297,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void RefreshBodyObject(Body body, GameObject bodyObject)
     {
-        
-        foreach(JointType joint in joints)
+        foreach (JointType joint in joints)
         {
             Joint sourceJoint = body.Joints[joint];
             Vector3 targetPosition = GetVector3FromJoint(sourceJoint);
@@ -267,67 +305,222 @@ public class PlayerMovement : MonoBehaviour
             Transform jointObject = bodyObject.transform.Find(joint.ToString());
             jointObject.position = targetPosition;
 
-            if (joint == currentFoot)
+            switch (CurrentGameMode)
             {
-                print("Floor: " + Floor.Height);
-                print("Joint: " + jointObject.position.y);
-                print("Target: " + targetPosition);
-                CameraSpacePoint point = body.Joints[joint].Position;
-                print("Dist: " + Floor.DistanceFrom(point));
-
-                if (Floor.DistanceFrom(point) > minUpHeight)
-                {
-                    transform.position += transform.forward * Time.deltaTime * 5;
-                }
+                case GameMode.RACE:
+                    RefreshRace(body);
+                    break;
+                case GameMode.STATIONARY:
+                default:
+                    RefreshStationary(sourceJoint, joint);
+                    break;
             }
-        }
-
-        
-        /*for (JointType jt = JointType.SpineBase; jt <= JointType.ThumbRight; jt++)
-        {
-            Joint sourceJoint = body.Joints[jt];
-            Joint? targetJoint = null;
-
-            if (_BoneMap.ContainsKey(jt))
-            {
-                targetJoint = body.Joints[_BoneMap[jt]];
-            }
-
-            Transform jointObj = bodyObject.transform.Find(jt.ToString());
-            jointObj.localPosition = GetVector3FromJoint(sourceJoint);
-
-            LineRenderer lr = jointObj.GetComponent<LineRenderer>();
-            if (targetJoint.HasValue)
-            {
-                lr.SetPosition(0, jointObj.localPosition);
-                lr.SetPosition(1, Vector3.Lerp(lr.GetPosition(1), GetVector3FromJoint(targetJoint.Value), Time.deltaTime*5));
-                lr.SetColors(GetColorForState(sourceJoint.TrackingState), GetColorForState(targetJoint.Value.TrackingState));
-            }
-            else
-            {
-                lr.enabled = false;
-            }
-        }*/
-    }
-
-    private static Color GetColorForState(TrackingState state)
-    {
-        switch (state)
-        {
-            case TrackingState.Tracked:
-                return Color.green;
-
-            case TrackingState.Inferred:
-                return Color.red;
-
-            default:
-                return Color.black;
         }
     }
 
     private Vector3 GetVector3FromJoint(Joint joint)
     {
-        return new Vector3(joint.Position.X * playerSize, joint.Position.Y * playerSize, joint.Position.Z * playerSize);
+        return new Vector3(joint.Position.X * playerSize, joint.Position.Y * playerSize, joint.Position.Z * playerSize) + transform.position;
+    }
+    #endregion
+
+    #region Race Movement
+    private void RefreshRace(Body body)
+    {
+        if (!hasFailedRedLight)
+        {
+            var currentPosition = body.Joints[JointType.SpineBase].Position;
+            var distance = Length(currentPosition);
+
+            SetPlayerZ(distance);
+            CheckStateRace(distance);
+        }
+        else
+        {
+
+        }
+    }
+
+    private void CheckStateRace(float distance)
+    {
+        switch (gameController.lightState)
+        {
+            case LightState.RED:
+                if (!hasFailedRedLight && gameController.canDetectPenaltyMovement) StartCoroutine(FailRedLight());
+                break;
+
+            case LightState.GREEN:
+                if(distance < closestZ) closestZ = distance;
+                break;
+
+            case LightState.OFF:
+            default:
+                break;
+        }
+    }
+
+    private void SetPlayerZ(float distance)
+    {
+        var pos = transform.position;
+        pos.z = (startingDistance - distance) * playerSize + startingZ;
+
+        transform.position = pos;
+    }
+
+    public float Length(CameraSpacePoint point)
+    {
+        return Mathf.Sqrt(
+            point.X * point.X +
+            point.Y * point.Y +
+            point.Z * point.Z
+        );
+    }
+    #endregion
+
+    #region Stationary Movement
+    private void RefreshStationary(Joint sourceJoint, JointType joint)
+    {
+        if (!footLowLocked)
+        {
+            if (sourceJoint.Position.Y < footLow[joint])
+            {
+                footLow[joint] = sourceJoint.Position.Y;
+            }
+        }
+
+        var distFromGround = sourceJoint.Position.Y - footLow[joint];
+
+        if(joint == JointType.AnkleLeft)
+        {
+            print("Dist: " + distFromGround);
+            print("Foot Low: " + footLow[joint]);
+        }
+
+
+        /*
+        //CameraSpacePoint point = body.Joints[joint].Position;
+        //var distFromGround = Floor.DistanceFrom(point);
+        if (joint == JointType.AnkleLeft)
+        {
+            print("Floor: " + Floor.Height);
+            print("Joint: " + jointObject.position.y);
+            print("Target: " + targetPosition);
+            print("Dist: " + distFromGround);
+        }*/
+
+        if (distFromGround > minUpHeight)
+        {
+            footLowLocked = true;
+            var newHeight = Mathf.Clamp((float)distFromGround, minUpHeight, maxUpHeight);
+            footHeight[joint] = newHeight > footHeight[joint] ? newHeight : footHeight[joint];
+            CheckStateStationary(footHeight[joint]);
+        }
+        else if (distFromGround < minDownHeight && footHeight[joint] != 0)
+        {
+            //CheckStateStationary(footHeight[joint]);
+            footHeight[joint] = 0.0f;
+        }
+    }
+
+    private void CheckStateStationary(float heightReached)
+    {
+        if (gameController == null) return;
+
+        switch (gameController.lightState)
+        {
+            case LightState.RED:
+                if (!hasFailedRedLight && gameController.canDetectPenaltyMovement) StartCoroutine(FailRedLight());
+                break;
+
+            case LightState.GREEN:
+                movementRoutines.Enqueue(StartCoroutine(MovePlayerStationary(heightReached)));
+                break;
+
+            case LightState.OFF:
+            default:
+                break;
+        }
+    }
+
+    private IEnumerator MovePlayerStationary(float height)
+    {
+        float t = movementTime;
+        //var speed = Mathf.Lerp(minMovementSpeed, maxMovementSpeed, Mathf.InverseLerp(minUpHeight, maxUpHeight, height));
+        var time = Mathf.Lerp(minMovementTime, maxMovementTime, Mathf.InverseLerp(minUpHeight, maxUpHeight, height));
+
+        //print("Move Length Time: " + time);
+
+        yield return new WaitForSeconds(time);
+
+        /*
+        while (t > 0)
+        {
+            yield return new WaitForEndOfFrame();
+            var tempT = 1.0f;
+            if (t > movementTime - movementSmoothTime)
+            {
+                tempT = Mathf.InverseLerp(movementTime, movementTime - movementSmoothTime, t);
+            }
+            else if(t < movementSmoothTime)
+            {
+                tempT = Mathf.InverseLerp(0.0f, 0.1f, t);
+            }
+
+            var tempSpeed = Mathf.Lerp(0, speed, tempT);
+
+            gameController.UpdatePoints();
+            transform.position += transform.forward * Time.deltaTime * tempSpeed;
+            t -= Time.deltaTime;
+        }*/
+
+        movementRoutines.Dequeue();
+    }
+
+    private void UpdatePlayerPositionStationary()
+    {
+        var modifier = movementRoutines.Count != 0 && gameController.lightState == LightState.GREEN ? 1 : -1;
+
+        currentMovementSpeed += Time.fixedDeltaTime / movementSmoothTime * modifier;
+        currentMovementSpeed = Mathf.Clamp(currentMovementSpeed, 0.0f, movementSpeed);
+
+        bool isWalking = currentMovementSpeed != 0;
+        playerAnimator.SetBool(walkID, isWalking);
+
+        if (isWalking)
+        {
+            gameController.UpdatePoints();
+
+            transform.position += transform.forward * Time.fixedDeltaTime * currentMovementSpeed;
+        }
+    }
+    #endregion
+
+    /// <summary>
+    /// Handles the event of failing a red light.
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator FailRedLight()
+    {
+        hasFailedRedLight = true;
+
+        var animID = CurrentGameMode == GameMode.RACE ? deathID : hitID;
+        playerAnimator.SetTrigger(animID);
+
+        yield return gameController.FailedRedRoutine();
+
+        if(CurrentGameMode == GameMode.RACE)
+        {
+            SetPlayerZ(startingZ);
+
+            while (transform.position.z > startingZ-0.25f)
+            {
+                yield return new WaitForFixedUpdate();
+            }
+
+            gameController.RestartGameRace();
+        }
+
+        hasFailedRedLight = false;
     }
     #endregion
 }

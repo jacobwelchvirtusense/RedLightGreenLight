@@ -19,7 +19,7 @@ public class Floor : MonoBehaviour
     public static float Y { get; internal set; }
     public static float Z { get; internal set; }
     public static float W { get; internal set; }
-    public static Windows.Kinect.Vector4 floorClipPlane;
+
     public Floor(Windows.Kinect.Vector4 floorClipPlane)
     {
         X = floorClipPlane.X;
@@ -37,7 +37,10 @@ public class Floor : MonoBehaviour
     }
     public static double DistanceFrom(CameraSpacePoint point)
     {
-        Windows.Kinect.Vector4 clipPlane = floorClipPlane;
+        /*
+        print("X: " + point.X);
+        print("Y: " + point.Y);
+        print("Z: " + point.Z);*/
 
         double numerator = X * point.X + Y * point.Y + Z * point.Z + W;
         double denominator = Math.Sqrt(X * X + Y * Y + Z * Z);

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using static InspectorValues;
+using static GameSettings;
 
 [RequireComponent(typeof(AudioSource))]
 public class GameController : MonoBehaviour
@@ -38,30 +39,12 @@ public class GameController : MonoBehaviour
     [SerializeField] private float currentTimer = 0.5f;
     #endregion
 
-    #region Game Settings
-    #region Movement Tracking Method
-    /// <summary>
-    /// The difficulty for tracking movement. Includes movement threshold and time before movement detection.
-    /// </summary>
-    public enum MovementTrackingMethod { EASY, MEDIUM, HARD }
-
-    [field:Header("Game Settings")]
-    [Tooltip("The current difficuly for tracking the players movement during a red light")]
-    [field: SerializeField] public MovementTrackingMethod movementTrackingMethod { get; private set; } = MovementTrackingMethod.MEDIUM;
-    #endregion
-
-    #region Game Mode
-    /// <summary>
-    /// The game modes that can be played.
-    /// </summary>
-    public enum GameMode { RACE, STATIONARY, WHEEL }
-
-    [Tooltip("The current game mode for this scene")]
-    [field: SerializeField] public GameMode gameMode { get; private set; } = GameMode.RACE;
-    #endregion
-    #endregion
-
     #region Red Light Green Light
+    [Tooltip("For debugging movement (true disables red lights from happening)")]
+    [SerializeField] private bool disableRed = false;
+
+    [Space(SPACE_BETWEEN_EDITOR_ELEMENTS)]
+
     /// <summary>
     /// The number of red lights the user has failed.
     /// </summary>
@@ -231,9 +214,13 @@ public class GameController : MonoBehaviour
 
     #region Points
     [Header("Points")]
-    [Range(0, 100)]
+    [Range(0, 1000)]
     [Tooltip("The amount of points to earn per tick of movement")]
-    [SerializeField] private int pointsPerMovement = 1;
+    [SerializeField] private int pointsPerMovement = 10;
+
+    [Range(0, 10000)]
+    [Tooltip("The amount of points to lose when failing a red light")]
+    [SerializeField] private int penaltyPoints = 1000;
     #endregion
     #endregion
 
@@ -245,6 +232,8 @@ public class GameController : MonoBehaviour
     private void Awake()
     {
         InitializeComponents();
+        GameTimerUIHandler.UpdateTimer(0);
+
         StartCoroutine(CountdownLoop());
     }
 
@@ -289,8 +278,7 @@ public class GameController : MonoBehaviour
         StartRedGreenLoop(true);
 
         // Sets timer if this game mode has it
-        if (gameMode.Equals(GameMode.STATIONARY)) StartCoroutine(GameTimer());
-        else GameTimerUIHandler.DisableTimer();
+        if (CurrentGameMode.Equals(GameMode.STATIONARY)) StartCoroutine(GameTimer());
     }
     #endregion
 
@@ -323,14 +311,29 @@ public class GameController : MonoBehaviour
     public IEnumerator FailedRedRoutine()
     {
         failedRedLights++;
-        PlaySound(failSound, failSoundVolume);
-
-        StartCoroutine(MainCameraHandler.ApplyCameraShake(cameraShakeAmplitude, cameraShakeFrequency, cameraShakeDuration));
         StartRedGreenLoop(false);
+        PlaySound(failSound, failSoundVolume);
+        StartCoroutine(MainCameraHandler.ApplyCameraShake(cameraShakeAmplitude, cameraShakeFrequency, cameraShakeDuration));
 
-        yield return new WaitForSeconds(penaltyDuration);
+        switch (CurrentGameMode)
+        {
+            case GameMode.RACE:
+                yield return new WaitForSeconds(penaltyDuration);
+                ReturnStartUIHandler.EnableText(true);
+                break;
+            case GameMode.STATIONARY:
+            default:
+                UpdatePoints(-penaltyPoints);
+                yield return new WaitForSeconds(penaltyDuration);
+                StartRedGreenLoop(true);
+                break;
+        }
+    }
 
-        StartRedGreenLoop(true);
+    public void RestartGameRace()
+    {
+        ReturnStartUIHandler.EnableText(false);
+        StartCoroutine(CountdownLoop());
     }
     #endregion
 
@@ -338,9 +341,11 @@ public class GameController : MonoBehaviour
     /// <summary>
     /// Updates the player's current point total.
     /// </summary>
-    public void UpdatePoints()
+    public void UpdatePoints(int updateAmount = 0)
     {
-        PointUIHandler.UpdatePoints(pointsPerMovement);
+        if (updateAmount == 0) updateAmount = pointsPerMovement;
+
+        PointUIHandler.UpdatePoints(updateAmount);
     }
     #endregion
     #endregion
@@ -378,6 +383,7 @@ public class GameController : MonoBehaviour
             GoToGreenLight();
             yield return new WaitForSeconds(GenerateRandomValue(minTimeBeforeRed, maxTimeBeforeRed));
             
+            if(!disableRed)
             GoToRedLight();
             yield return new WaitForSeconds(GenerateRandomValue(minTimeBeforeGreen, maxTimeBeforeGreen));
         }
@@ -409,8 +415,7 @@ public class GameController : MonoBehaviour
     /// </summary>
     private void GoToOffLight()
     {
-        lightState = LightState.OFF;
-        UpdateActiveLights();
+        UpdateActiveLights(LightState.OFF);
 
         StartRedGreenLoop(false);
     }
@@ -422,8 +427,7 @@ public class GameController : MonoBehaviour
     {
         PlaySound(greenLightSound, greenLightSoundVolume);
 
-        lightState = LightState.GREEN;
-        UpdateActiveLights();
+        UpdateActiveLights(LightState.GREEN);
     }
 
     /// <summary>
@@ -434,8 +438,7 @@ public class GameController : MonoBehaviour
         PlaySound(redLightSound, redLightSoundVolume);
         StartCoroutine(RedLightDetectionDelay());
 
-        lightState = LightState.RED;
-        UpdateActiveLights();
+        UpdateActiveLights(LightState.RED);
     }
 
     /// <summary>
@@ -446,7 +449,7 @@ public class GameController : MonoBehaviour
     {
         canDetectPenaltyMovement = false;
 
-        yield return new WaitForSeconds(timeBeforeMovementDetection[(int)movementTrackingMethod]);
+        yield return new WaitForSeconds(timeBeforeMovementDetection[(int)CurrentMovementTrackingMethod]);
 
         canDetectPenaltyMovement = true;
     }
@@ -454,8 +457,9 @@ public class GameController : MonoBehaviour
     /// <summary>
     /// Updates the status of the active lights in the scene.
     /// </summary>
-    private void UpdateActiveLights()
+    private void UpdateActiveLights(LightState newLightState)
     {
+        lightState = newLightState;
         lightChangeEvent.Invoke(lightState);
     }
     #endregion

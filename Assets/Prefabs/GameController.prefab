@@ -141,42 +141,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6252327a7e8a054ebe52f4251c53bf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  disableRed: 0
   minTimerAmount: 30
   maxTimerAmount: 120
-  currentTimer: 0.5
-  <movementTrackingMethod>k__BackingField: 1
-  <gameMode>k__BackingField: 1
+  currentTimer: 1
   canDetectPenaltyMovement: 0
   lightState: 2
-  offLightEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  greenLightEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  redLightEvent:
+  lightChangeEvent:
     m_PersistentCalls:
       m_Calls: []
   randomNumberMethod: 1
-  timeBeforeStart: 3
+  timeBeforeStart: 0
   timeBeforeMovementDetection:
-  - 0.4
+  - 0.6
+  - 0.45
   - 0.3
-  - 0.25
-  penaltyDuration: 1.5
-  minTimeBeforeRed: 1.5
-  maxTimeBeforeRed: 3
+  penaltyDuration: 1
+  minTimeBeforeRed: 2.5
+  maxTimeBeforeRed: 4.5
   minTimeBeforeGreen: 1
   maxTimeBeforeGreen: 1.75
+  cameraShakeAmplitude: 1.5
+  cameraShakeFrequency: 1.5
+  cameraShakeDuration: 1
   countDownSound: {fileID: 8300000, guid: aca95b6c5936f9a42b7a9cd9adb477af, type: 3}
   countDownSoundVolume: 1
   redLightSound: {fileID: 8300000, guid: 8f0ce46bcfb30404a8ad1d230065f99c, type: 3}
   redLightSoundVolume: 1
   greenLightSound: {fileID: 8300000, guid: 99d51511e824dad41b8884ba3dc5908f, type: 3}
   greenLightSoundVolume: 1
-  failSound: {fileID: 8300000, guid: b78754c844e95544bbf7368a9f2c4f24, type: 3}
+  failSound: {fileID: 8300000, guid: 219a71be504af81498d0ac16b2c9a5e6, type: 3}
   failSoundVolume: 1
-  cameraShakeAmplitude: 1.5
-  cameraShakeFrequency: 1.5
-  cameraShakeDuration: 1
-  pointsPerMovement: 1
+  pointsPerMovement: 10
+  penaltyPoints: 1000

@@ -28,6 +28,9 @@ public class LightEventHandler : MonoBehaviour
         gameController.lightChangeEvent.AddListener(SetActive);
 
         if(TryGetComponent(out TextMeshProUGUI text)) text.color = Color.white;
+
+        if(TryGetComponent(out Light light)) light.enabled = true;
+
         gameObject.SetActive(false);
     }
 

@@ -31,14 +31,6 @@ public class GameTimerUIHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Turns off the timer UI.
-    /// </summary>
-    public static void DisableTimer()
-    {
-        timerText.gameObject.SetActive(false);
-    }
-
-    /// <summary>
     /// Updates timer UI.
     /// </summary>
     /// <param name="currentCount">The current timer to be displayed.</param>
@@ -49,6 +41,7 @@ public class GameTimerUIHandler : MonoBehaviour
 
         // Updates the countdown UI 
         timerText.text = "Time Left: " + currentTimer.ToString();
+        timerText.gameObject.SetActive(currentTimer != 0);
     }
     #endregion
 }
