@@ -312,7 +312,6 @@ GameObject:
   - component: {fileID: 5739914123114928529}
   - component: {fileID: 5739914123114928526}
   - component: {fileID: 5739914123114928527}
-  - component: {fileID: 5739914123114928530}
   - component: {fileID: 5739914123114928531}
   m_Layer: 0
   m_Name: Player
@@ -403,26 +402,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!95 &5739914123114928530
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5739914123114928524}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
 --- !u!114 &5739914123114928531
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -435,12 +414,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a6d12ff9d0de9348a6ddede26afc9a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minUpHeight: 0.02
-  maxUpHeight: 0.4
-  minDownHeight: 0.01
-  movementTime: 0.6
-  minMovementTime: 0.4
-  maxMovementTime: 1.4
+  winningDistance: 0.1
+  minUpHeight: 0.0125
+  maxUpHeight: 0.3
+  minMovementTime: 0.5
+  maxMovementTime: 0.8
   movementSmoothTime: 0.025
   movementSpeed: 7
   BoneMaterial: {fileID: 2100000, guid: f2ea145c63353784985576f08398a815, type: 2}

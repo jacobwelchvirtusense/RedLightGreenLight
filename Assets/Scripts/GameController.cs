@@ -100,7 +100,7 @@ public class GameController : MonoBehaviour
     #endregion
 
     #region Red Light Movement Timings
-    [Range(0.0f, 1.0f)]
+    [Range(0.0f, 5.0f)]
     [Tooltip("The time before checking for user movement during a red light (easy is index 0 - 2 for hard)")]
     [SerializeField] private float[] timeBeforeMovementDetection = new float[] { 0.4f, 0.3f, 0.25f };
 
@@ -314,17 +314,16 @@ public class GameController : MonoBehaviour
         StartRedGreenLoop(false);
         PlaySound(failSound, failSoundVolume);
         StartCoroutine(MainCameraHandler.ApplyCameraShake(cameraShakeAmplitude, cameraShakeFrequency, cameraShakeDuration));
+        UpdatePoints(-penaltyPoints);
+        yield return new WaitForSeconds(penaltyDuration);
 
         switch (CurrentGameMode)
         {
             case GameMode.RACE:
-                yield return new WaitForSeconds(penaltyDuration);
                 ReturnStartUIHandler.EnableText(true);
                 break;
             case GameMode.STATIONARY:
             default:
-                UpdatePoints(-penaltyPoints);
-                yield return new WaitForSeconds(penaltyDuration);
                 StartRedGreenLoop(true);
                 break;
         }
@@ -466,10 +465,11 @@ public class GameController : MonoBehaviour
     #endregion
 
     #region End Game
-    private IEnumerator EndGame()
+    public IEnumerator EndGame()
     {
         yield return new WaitForEndOfFrame();
         GoToOffLight();
+        EndGameUIHandler.EnableText(true);
         OutputData();
     }
 

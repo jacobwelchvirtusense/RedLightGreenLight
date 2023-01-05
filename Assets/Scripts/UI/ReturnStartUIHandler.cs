@@ -28,6 +28,7 @@ public class ReturnStartUIHandler : MonoBehaviour
     private void Awake()
     {
         returnToStartText = GetComponent<TextMeshProUGUI>();
+        returnToStartText.enabled = true;
         gameObject.SetActive(false);
     }
 

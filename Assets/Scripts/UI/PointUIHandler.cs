@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+using static GameSettings;
+
 public class PointUIHandler : MonoBehaviour
 {
     #region Fields
@@ -33,6 +35,11 @@ public class PointUIHandler : MonoBehaviour
     {
         PointsText.Add(GetComponent<TextMeshProUGUI>());
         UpdatePoints(0);
+    }
+
+    private void Start()
+    {
+        gameObject.SetActive(CurrentGameMode != GameMode.RACE);
     }
 
     /// <summary>

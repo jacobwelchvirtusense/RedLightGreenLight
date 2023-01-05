@@ -36,8 +36,6 @@ public class BodySourceManager : MonoBehaviour
             var frame = _Reader.AcquireLatestFrame();
             if (frame != null)
             {
-                new Floor(frame.FloorClipPlane);
-
                 if (_Data == null)
                 {
                     _Data = new Body[_Sensor.BodyFrameSource.BodyCount];
