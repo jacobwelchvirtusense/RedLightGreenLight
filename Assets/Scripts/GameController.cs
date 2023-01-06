@@ -158,7 +158,7 @@ public class GameController : MonoBehaviour
     private AudioSource audioSource;
 
     [Header("Sound")]
-    #region Fail Sound
+    #region Countdown Sound
     [Tooltip("The sound made with each change of the countdown")]
     [SerializeField]
     private AudioClip countDownSound;

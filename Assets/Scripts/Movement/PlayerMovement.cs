@@ -34,23 +34,40 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private const float playerSize = 10.0f;
 
+    #region Race Specifics
     private float startingCharacterZ;
     private float startingSensorDistance;
     private float currentSensorDistance = Mathf.Infinity;
+    #endregion
 
-    private float maxQueueSize = 25;
-    private Dictionary<JointType, Queue<float>> footTracking = new Dictionary<JointType, Queue<float>>();
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The amount of leeway alloted to players when having them return to the start")]
+    [SerializeField] private float returnDistanceLeeway = 0.25f;
+
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The amount of time to keep player animations during the race game mode")]
+    [SerializeField] private float raceAnimationDuration = 0.5f;
+
+    private float currentAnimationDuration = 0.0f;
 
     [Range(0.0f, 10.0f)]
     [Tooltip("The distance from the sensor where the patient wins")]
     [SerializeField] private float winningDistance = 0.1f;
     
-    // TODO
     #region Movement
     /// <summary>
     /// All of the current movements being handled.
     /// </summary>
     private Queue<Coroutine> movementRoutines = new Queue<Coroutine>();
+
+    [Range(0, 120)]
+    [Tooltip("The max size of frames to hold for checking if players have moved feed")]
+    [SerializeField] private int maxQueueSize = 25;
+
+    /// <summary>
+    /// Holds reference to the y positions of players feet.
+    /// </summary>
+    private Dictionary<JointType, Queue<float>> footTracking = new Dictionary<JointType, Queue<float>>();
 
     #region Input Thresholds
     [Header("Inputs")]
@@ -344,7 +361,17 @@ public class PlayerMovement : MonoBehaviour
                     currentSensorDistance = distance;
                     SetPlayerZ(currentSensorDistance);
 
-                    if(winningDistance > currentSensorDistance)
+                    playerAnimator.SetBool(walkID, true);
+                    
+                    if(currentAnimationDuration == 0)
+                    {
+                        StartCoroutine(StopMovingAnimations());
+                    }
+
+                    currentAnimationDuration = minMovementTime;
+
+
+                    if (winningDistance > currentSensorDistance)
                     {
                         StartCoroutine(gameController.EndGame());
                     }
@@ -363,6 +390,32 @@ public class PlayerMovement : MonoBehaviour
         pos.z = (startingSensorDistance - distance) * playerSize + startingCharacterZ;
 
         transform.position = pos;
+    }
+
+    private IEnumerator StopMovingAnimations()
+    {
+        while (currentAnimationDuration > 0)
+        {
+            yield return new WaitForFixedUpdate();
+            currentAnimationDuration -= Time.fixedDeltaTime;
+        }
+
+        print("Stop");
+
+        currentAnimationDuration = 0;
+        playerAnimator.SetBool(walkID, false);
+    }
+
+    private IEnumerator MakePlayerRestart()
+    {
+        SetPlayerZ(startingSensorDistance);
+
+        while (currentSensorDistance < startingSensorDistance - returnDistanceLeeway)
+        {
+            yield return new WaitForFixedUpdate();
+        }
+
+        gameController.RestartGameRace();
     }
 
     public float Length(CameraSpacePoint point)
@@ -491,14 +544,7 @@ public class PlayerMovement : MonoBehaviour
         #region Checks for player returning to start
         if (CurrentGameMode == GameMode.RACE)
         {
-            SetPlayerZ(startingSensorDistance);
-
-            while (currentSensorDistance < startingSensorDistance - 0.25f)
-            {
-                yield return new WaitForFixedUpdate();
-            }
-
-            gameController.RestartGameRace();
+            yield return MakePlayerRestart();
         }
         #endregion
 
