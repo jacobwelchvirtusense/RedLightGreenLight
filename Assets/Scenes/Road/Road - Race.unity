@@ -9245,18 +9245,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5739914123114928531, guid: aef55a6d37243ac46a64d14070ac291f,
         type: 3}
-      propertyPath: minMovementTime
-      value: 0.3
+      propertyPath: isKnee
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5739914123114928531, guid: aef55a6d37243ac46a64d14070ac291f,
         type: 3}
-      propertyPath: winningDistance
-      value: 1.3
+      propertyPath: movementSpeed
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 5739914123114928531, guid: aef55a6d37243ac46a64d14070ac291f,
         type: 3}
-      propertyPath: returnDistanceLeeway
-      value: 0.15
+      propertyPath: penaltyDetectionLeeway
+      value: 0.2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aef55a6d37243ac46a64d14070ac291f, type: 3}

@@ -19,6 +19,7 @@ using static GameSettings;
 using static GameController;
 using System;
 using System.Linq;
+using Unity.VisualScripting;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -39,11 +40,6 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("The amount of time lerping in and out of movement")]
     [SerializeField] private float movementSmoothTime = 0.2f;
 
-    [Range(0.0f, 20.0f)]
-    [Tooltip("The speed of the player when moving")]
-    [SerializeField]
-    private float movementSpeed = 7.0f;
-
     /// <summary>
     /// Reference to the player's current movement speed.
     /// </summary>
@@ -51,40 +47,65 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Race Fields
-    // Holds values specific to the race game mode
+    // Starting values of the user
     private float startingRaceZ;
     private float startingSensorDistance;
-    private float currentSensorDistance = Mathf.Infinity;
+
+    // Current sensor value tracking
+    private float currentSensorDistance;
+    private float currentBestSensorDistance = Mathf.Infinity;
+    private float currentBestGreenLightDistance = Mathf.Infinity;
+    private float currentCharacterDistance = 0;
 
     [Header("Race")]
+    [Range(0.0f, 20.0f)]
+    [Tooltip("The speed of the player when moving")]
+    [SerializeField]
+    private float movementSpeedRace = 7.0f;
+
     [Range(0.0f, 10.0f)]
     [Tooltip("The amount of leeway alloted to players when having them return to the start")]
     [SerializeField] private float returnDistanceLeeway = 0.25f;
 
     [Range(0.0f, 10.0f)]
+    [Tooltip("The amount of leeway alloted to players when having them return to the start")]
+    [SerializeField] private float penaltyDetectionLeeway = 0.15f;
+
+    [Range(0.0f, 10.0f)]
     [Tooltip("The amount of time to keep player animations during the race game mode")]
     [SerializeField] private float raceAnimationDuration = 0.5f;
-
-    private float currentMovementDuration = 0.0f;
 
     [Range(0.0f, 10.0f)]
     [Tooltip("The distance from the sensor where the patient wins")]
     [SerializeField] private float winningDistance = 0.1f;
     #endregion
 
-    #region Stationary
+    #region Stationary Fields
     [Header("Stationary")]
+    [Range(0.0f, 20.0f)]
+    [Tooltip("The speed of the player when moving")]
+    [SerializeField]
+    private float movementSpeedStationary = 7.0f;
+
     [Range(0, 120)]
     [Tooltip("The max size of frames to hold for checking if players have moved feed")]
     [SerializeField] private int maxQueueSize = 25;
 
     [Range(0.0f, 10.0f)]
     [Tooltip("The minimum height a patients foot must be raised by")]
-    [SerializeField] private float minUpHeight = 0.1f;
+    [SerializeField] private float minUpHeightKnee = 0.1f;
 
     [Range(0.0f, 10.0f)]
     [Tooltip("The maximum height a patients foot may be raised by (limits movementspeed")]
-    [SerializeField] private float maxUpHeight = 0.4f;
+    [SerializeField] private float maxUpHeightKnee = 0.4f;
+
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The minimum height a patients foot must be raised by")]
+    [SerializeField] private float minUpHeightFoot = 0.1f;
+
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The maximum height a patients foot may be raised by (limits movementspeed")]
+    [SerializeField] private float maxUpHeightFoot = 0.4f;
 
     [Space(InspectorValues.SPACE_BETWEEN_EDITOR_ELEMENTS)]
 
@@ -108,6 +129,11 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private Animator playerAnimator;
 
+    /// <summary>
+    /// The current amount of time left in the movement animation duration.
+    /// </summary>
+    private float currentMovementDuration = 0.0f;
+
     // Animator ID for when the player is moving
     private string walkAnimationTag = "IsWalking";
     private int walkID;
@@ -121,23 +147,24 @@ public class PlayerMovement : MonoBehaviour
     private int deathID;
     #endregion
 
+    //TODO
     #region Kinnect
     private Dictionary<ulong, GameObject> _Bodies = new Dictionary<ulong, GameObject>();
     private BodySourceManager bodyManager;
 
     [SerializeField]
     private bool isKnee = false;
-    private List<JointType> joints;
-    private List<JointType> kneeJoints = new List<JointType>
+    private JointType[] joints;
+    private JointType[] kneeJoints = new JointType[]
     {
         JointType.KneeLeft,
         JointType.KneeRight
     };
 
-    private List<JointType> footJoints = new List<JointType>
+    private JointType[] footJoints = new JointType[]
     {
-        JointType.KneeLeft,
-        JointType.KneeRight
+        JointType.AnkleLeft,
+        JointType.AnkleRight
     };
     #endregion
     #endregion
@@ -234,6 +261,7 @@ public class PlayerMovement : MonoBehaviour
                 {
                     var startingPosition = body.Joints[JointType.SpineBase].Position;
                     startingSensorDistance = Length(startingPosition);
+                    currentCharacterDistance = startingSensorDistance;
                     _Bodies[body.TrackingId] = CreateBodyObject(body.TrackingId);
                 }
 
@@ -258,81 +286,99 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>
     /// Takes kinnect input to move the player in the game.
     /// </summary>
-    /// <param name="body"></param>
+    /// <param name="body">The kinnect body of the user.</param>
     private void RefreshBodyObject(Body body)
     {
-        foreach (JointType joint in joints)
+        switch (CurrentGameMode)
         {
-            Joint sourceJoint = body.Joints[joint];
+            case GameMode.RACE:
+                RaceMovement(body);
+                break;
 
-            switch (CurrentGameMode)
-            {
-                case GameMode.RACE:
-                    RaceMovement(body);
-                    break;
-                case GameMode.STATIONARY:
-                default:
-                    RefreshStationary(sourceJoint, joint);
-                    UpdatePlayerPositionStationary();
-                    break;
-            }
+            case GameMode.STATIONARY:
+            default:
+                foreach (JointType joint in joints)
+                {
+                    Joint sourceJoint = body.Joints[joint];
+
+                    var height = BodySourceManager.DistanceFrom(sourceJoint.Position);
+                    
+                    /*
+                    if(height > minUpHeightFoot)
+                    {
+                        //print("Height: " + height);
+                        CheckStateStationary(height);
+                    }*/
+
+                    StationaryMovement(sourceJoint, joint);
+                }
+
+                //print(body.Joints[JointType.KneeLeft].Position.Y - body.Joints[JointType.AnkleLeft].Position.Y);
+
+                UpdateCharacterPositionStationary();
+                break;
         }
+
+
     }
     #endregion
 
     #region Race Movement
+    /// <summary>
+    /// Handles movement for the race game mode based on the kinnect input.
+    /// </summary>
+    /// <param name="body">The body to use data from for movement.</param>
     private void RaceMovement(Body body)
     {
+        // Gets user distance from the sensor
         var currentPosition = body.Joints[JointType.SpineBase].Position;
         var distance = Length(currentPosition);
+        currentSensorDistance = distance;
 
-        if (hasFailedRedLight)
+        // Updates character position, checks win state, and check fail state
+        if (!hasFailedRedLight && gameController.lightState != LightState.OFF) 
         {
-            currentSensorDistance = distance;
-        }
-        else
-        {
-            CheckStateRace(distance);
+            if (distance < currentBestSensorDistance)
+            {
+                currentBestSensorDistance = distance;
+                RefreshRaceAnimaitons();
+                CheckPlayerWinRace();
+            }
+
+            // Sets character position
+            currentCharacterDistance = Mathf.Lerp(currentCharacterDistance, currentBestSensorDistance, Time.fixedDeltaTime * movementSpeedRace);
+            if (currentBestSensorDistance != Mathf.Infinity) SetPlayerZ(currentCharacterDistance);
+
+            RaceStateHandling(distance);
         }
     }
 
-    private void CheckStateRace(float distance)
+    /// <summary>
+    /// Handles movement based on the current state of the game.
+    /// </summary>
+    /// <param name="distance">The users current distance from the sensor.</param>
+    private void RaceStateHandling(float distance)
     {
         switch (gameController.lightState)
         {
+            // Checks if the user has move too much during a red light
             case LightState.RED:
-                if (!hasFailedRedLight && gameController.canDetectPenaltyMovement && distance+0.25f< currentSensorDistance) StartCoroutine(FailRedLight());
+                var distanceLeewayOvershot = distance + penaltyDetectionLeeway < currentBestGreenLightDistance;
+                if (gameController.canDetectPenaltyMovement && distanceLeewayOvershot) StartCoroutine(FailRedLight());
                 break;
 
+            // Updates the current farthest distance reached during a red light
             case LightState.GREEN:
-                if (distance < currentSensorDistance)
-                {
-                    currentSensorDistance = distance;
-                    SetPlayerZ(currentSensorDistance);
-
-                    playerAnimator.SetBool(walkID, true);
-                    
-                    if(currentMovementDuration == 0)
-                    {
-                        StartCoroutine(StopMovingAnimations());
-                    }
-
-                    currentMovementDuration = raceAnimationDuration;
-
-
-                    if (winningDistance > currentSensorDistance)
-                    {
-                        StartCoroutine(gameController.EndGame());
-                    }
-                }
-                break;
-
-            case LightState.OFF:
             default:
+                if (currentBestSensorDistance < currentBestGreenLightDistance) currentBestGreenLightDistance = distance;
                 break;
         }
     }
 
+    /// <summary>
+    /// Sets the position of the character.
+    /// </summary>
+    /// <param name="distance"></param>
     private void SetPlayerZ(float distance)
     {
         var pos = transform.position;
@@ -341,7 +387,27 @@ public class PlayerMovement : MonoBehaviour
         transform.position = pos;
     }
 
-    private IEnumerator StopMovingAnimations()
+    #region Movement Animations
+    /// <summary>
+    /// Refreshes the timer on the race movement animations.
+    /// </summary>
+    private void RefreshRaceAnimaitons()
+    {
+        if (currentMovementDuration == 0)
+        {
+            playerAnimator.SetBool(walkID, true);
+
+            StartCoroutine(StopMovingRaceAnimations());
+        }
+
+        currentMovementDuration = raceAnimationDuration;
+    }
+
+    /// <summary>
+    /// Loops until the movement animation should be stopped.
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator StopMovingRaceAnimations()
     {
         do
         {
@@ -350,13 +416,16 @@ public class PlayerMovement : MonoBehaviour
         }
         while (currentMovementDuration > 0);
 
-
-        print("Stop");
-
         currentMovementDuration = 0;
         playerAnimator.SetBool(walkID, false);
     }
+    #endregion
 
+    #region Fail
+    /// <summary>
+    /// Handles the event of failing a red light and having the user return to start.
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator MakePlayerRestart()
     {
         SetPlayerZ(startingSensorDistance);
@@ -369,7 +438,34 @@ public class PlayerMovement : MonoBehaviour
         gameController.RestartGameRace();
     }
 
-    public float Length(CameraSpacePoint point)
+    /// <summary>
+    /// Resets race fields to their starting amount.
+    /// </summary>
+    private void ResetRaceValues()
+    {
+        currentBestSensorDistance = Mathf.Infinity;
+        currentBestGreenLightDistance = Mathf.Infinity;
+        currentCharacterDistance = startingSensorDistance;
+    }
+    #endregion
+
+    /// <summary>
+    /// Checks if the player has won the race.
+    /// </summary>
+    private void CheckPlayerWinRace()
+    {
+        if (winningDistance > currentBestSensorDistance)
+        {
+            StartCoroutine(gameController.EndGame());
+        }
+    }
+
+    /// <summary>
+    /// Calculates the users distance from the camera.
+    /// </summary>
+    /// <param name="point">The camera space kinnect position to check for distance.</param>
+    /// <returns></returns>
+    private float Length(CameraSpacePoint point)
     {
         return Mathf.Sqrt(
             point.X * point.X +
@@ -379,46 +475,55 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
+    //TODO Currently working on updating the movement detection
     #region Stationary Movement
-    private void RefreshStationary(Joint sourceJoint, JointType joint)
+    private void StationaryMovement(Joint sourceJoint, JointType joint)
     {
         var footTrackingQueue = footTracking[joint];
 
         if(footTrackingQueue.Count == maxQueueSize)
         {
+            #region Knee Tracking
             if (isKnee)
             {
-                if (footTrackingQueue.Max() > sourceJoint.Position.Z) // .006
+                if (footTrackingQueue.Max() > sourceJoint.Position.Z)
                 {
                     var distUp = footTrackingQueue.Min() - sourceJoint.Position.Z;
 
-                    if (distUp > minUpHeight)
+                    if (distUp > minUpHeightKnee)
                     {
                         print(distUp);
-                        var newHeight = Mathf.Clamp(distUp, minUpHeight, maxUpHeight);
+                        var newHeight = Mathf.Clamp(distUp, minUpHeightKnee, maxUpHeightKnee);
                         CheckStateStationary(newHeight);
                     }
                 }
             }
+            #endregion
+
+            #region Foot Tracking
             else
             {
                 if (footTrackingQueue.Max() < sourceJoint.Position.Y)
                 {
                     var distUp = sourceJoint.Position.Y - footTrackingQueue.Min();
 
-                    if (distUp > minUpHeight)
+                    if (distUp > minUpHeightFoot)
                     {
-                        print(distUp);
-                        var newHeight = Mathf.Clamp(distUp, minUpHeight, maxUpHeight);
+                        print("Dist Up: " + distUp);
+                        var newHeight = Mathf.Clamp(distUp, minUpHeightFoot, maxUpHeightFoot);
                         CheckStateStationary(newHeight);
                     }
                 }
 
             }
+            #endregion
+
+            print("Variance: " + (footTrackingQueue.Max() - footTrackingQueue.Min()));
 
             footTrackingQueue.Dequeue();
         }
 
+        #region Enqueue Current Frame
         if (isKnee)
         {
             footTrackingQueue.Enqueue(sourceJoint.Position.Z);
@@ -427,6 +532,7 @@ public class PlayerMovement : MonoBehaviour
         {
             footTrackingQueue.Enqueue(sourceJoint.Position.Y);
         }
+        #endregion
     }
 
     private void CheckStateStationary(float heightReached)
@@ -440,13 +546,13 @@ public class PlayerMovement : MonoBehaviour
                 break;
 
             case LightState.GREEN:
-                var time = Mathf.Lerp(minMovementTime, maxMovementTime, Mathf.InverseLerp(minUpHeight, maxUpHeight, heightReached));
+                var inverseLerp = isKnee ? Mathf.InverseLerp(minUpHeightKnee, maxUpHeightKnee, heightReached) : Mathf.InverseLerp(minUpHeightFoot, maxUpHeightFoot, heightReached);
+                var time = Mathf.Lerp(minMovementTime, maxMovementTime, inverseLerp);
 
                 if (currentMovementDuration == 0)
                 {
                     currentMovementDuration = time;
-                    StartCoroutine(MovePlayerStationary());
-                    //.Enqueue());
+                    StartCoroutine(MoveCharacterStationary());
                 }
                 else if(currentMovementDuration < time)
                 {
@@ -460,7 +566,12 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private IEnumerator MovePlayerStationary()
+    #region Character Movement
+    /// <summary>
+    /// Updates the current duration of the stationary movement.
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator MoveCharacterStationary()
     {
         while (currentMovementDuration > 0)
         {
@@ -472,23 +583,27 @@ public class PlayerMovement : MonoBehaviour
         currentMovementDuration = 0;
     }
 
-    private void UpdatePlayerPositionStationary()
+    /// <summary>
+    /// Updates the characters position in the stationary game mode.
+    /// </summary>
+    private void UpdateCharacterPositionStationary()
     {
-        var modifier = currentMovementDuration != 0 && gameController.lightState == LightState.GREEN ? 1 : -1;
+        var modifier = currentMovementDuration != 0 ? 1 : -1;
 
         currentMovementSpeed += Time.fixedDeltaTime / movementSmoothTime * modifier;
-        currentMovementSpeed = Mathf.Clamp(currentMovementSpeed, 0.0f, movementSpeed);
+        currentMovementSpeed = Mathf.Clamp(currentMovementSpeed, 0.0f, movementSpeedStationary);
 
-        bool isWalking = currentMovementSpeed != 0;
+        bool isWalking = currentMovementSpeed != 0 && !hasFailedRedLight;
         playerAnimator.SetBool(walkID, isWalking);
 
-        if (isWalking)
+        if (isWalking && gameController.lightState == LightState.GREEN)
         {
             gameController.UpdatePoints();
 
             transform.position += transform.forward * Time.fixedDeltaTime * currentMovementSpeed;
         }
     }
+    #endregion
     #endregion
 
     #region Fail Event
@@ -501,8 +616,10 @@ public class PlayerMovement : MonoBehaviour
         // Handles fail animations
         var animID = CurrentGameMode == GameMode.RACE ? deathID : hitID;
         playerAnimator.SetTrigger(animID);
-        hasFailedRedLight = true;
 
+        // Handles reset event
+        hasFailedRedLight = true;
+        ResetRaceValues();
         yield return gameController.FailedRedRoutine();
 
         #region Checks for player returning to start

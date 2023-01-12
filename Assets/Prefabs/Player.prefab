@@ -414,17 +414,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a6d12ff9d0de9348a6ddede26afc9a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  returnDistanceLeeway: 0.25
-  raceAnimationDuration: 0.5
-  winningDistance: 0.9
-  maxQueueSize: 15
-  minUpHeight: 0.006
-  maxUpHeight: 0.03
-  minMovementTime: 0.4
-  maxMovementTime: 0.7
   movementSmoothTime: 0.025
-  movementSpeed: 3.5
-  isKnee: 1
+  movementSpeedRace: 20
+  returnDistanceLeeway: 0.2
+  penaltyDetectionLeeway: 0.15
+  raceAnimationDuration: 0.3
+  winningDistance: 1.3
+  movementSpeedStationary: 7.5
+  maxQueueSize: 15
+  minUpHeightKnee: 0.006
+  maxUpHeightKnee: 0.01
+  minUpHeightFoot: 0.01
+  maxUpHeightFoot: 0.4
+  minMovementTime: 0.3
+  maxMovementTime: 0.7
+  isKnee: 0
 --- !u!1 &5739914123274230590
 GameObject:
   m_ObjectHideFlags: 0

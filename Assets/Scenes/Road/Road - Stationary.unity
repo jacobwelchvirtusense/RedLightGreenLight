@@ -8995,6 +8995,31 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5739914123114928531, guid: aef55a6d37243ac46a64d14070ac291f,
+        type: 3}
+      propertyPath: maxQueueSize
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5739914123114928531, guid: aef55a6d37243ac46a64d14070ac291f,
+        type: 3}
+      propertyPath: maxMovementTime
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5739914123114928531, guid: aef55a6d37243ac46a64d14070ac291f,
+        type: 3}
+      propertyPath: maxUpHeightFoot
+      value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 5739914123114928531, guid: aef55a6d37243ac46a64d14070ac291f,
+        type: 3}
+      propertyPath: minMovementTime
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5739914123114928531, guid: aef55a6d37243ac46a64d14070ac291f,
+        type: 3}
+      propertyPath: minUpHeightFoot
+      value: 0.12
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aef55a6d37243ac46a64d14070ac291f, type: 3}
 --- !u!1001 &7513739081915527025
