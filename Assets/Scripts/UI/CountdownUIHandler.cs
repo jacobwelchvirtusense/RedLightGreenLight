@@ -26,6 +26,7 @@ public class CountdownUIHandler : MonoBehaviour
     private void Awake()
     {
         countdownText = GetComponent<TextMeshProUGUI>();
+        UpdateCountdown(0);
     }
 
     /// <summary>

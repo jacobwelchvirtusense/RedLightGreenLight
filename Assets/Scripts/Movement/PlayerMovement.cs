@@ -19,7 +19,6 @@ using static GameSettings;
 using static GameController;
 using System;
 using System.Linq;
-using Unity.VisualScripting;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -34,62 +33,8 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private const float playerSize = 10.0f;
 
-    #region Race Specifics
-    private float startingCharacterZ;
-    private float startingSensorDistance;
-    private float currentSensorDistance = Mathf.Infinity;
-    #endregion
-
-    [Range(0.0f, 10.0f)]
-    [Tooltip("The amount of leeway alloted to players when having them return to the start")]
-    [SerializeField] private float returnDistanceLeeway = 0.25f;
-
-    [Range(0.0f, 10.0f)]
-    [Tooltip("The amount of time to keep player animations during the race game mode")]
-    [SerializeField] private float raceAnimationDuration = 0.5f;
-
-    private float currentAnimationDuration = 0.0f;
-
-    [Range(0.0f, 10.0f)]
-    [Tooltip("The distance from the sensor where the patient wins")]
-    [SerializeField] private float winningDistance = 0.1f;
-    
-    #region Movement
-    /// <summary>
-    /// All of the current movements being handled.
-    /// </summary>
-    private Queue<Coroutine> movementRoutines = new Queue<Coroutine>();
-
-    [Range(0, 120)]
-    [Tooltip("The max size of frames to hold for checking if players have moved feed")]
-    [SerializeField] private int maxQueueSize = 25;
-
-    /// <summary>
-    /// Holds reference to the y positions of players feet.
-    /// </summary>
-    private Dictionary<JointType, Queue<float>> footTracking = new Dictionary<JointType, Queue<float>>();
-
-    #region Input Thresholds
-    [Header("Inputs")]
-    [Range(0.0f, 10.0f)]
-    [Tooltip("The minimum height a patients foot must be raised by")]
-    [SerializeField] private float minUpHeight = 0.1f;
-
-    [Range(0.0f, 10.0f)]
-    [Tooltip("The maximum height a patients foot may be raised by (limits movementspeed")]
-    [SerializeField] private float maxUpHeight = 0.4f;
-    #endregion
-
     #region Speed
     [Header("Speed")]
-    [Range(0.0f, 2.0f)]
-    [Tooltip("The amount of time movement lasts for")]
-    [SerializeField] private float minMovementTime = 0.5f;
-
-    [Range(0.0f, 2.0f)]
-    [Tooltip("The amount of time movement lasts for")]
-    [SerializeField] private float maxMovementTime = 1.0f;
-
     [Range(0.0f, 0.5f)]
     [Tooltip("The amount of time lerping in and out of movement")]
     [SerializeField] private float movementSmoothTime = 0.2f;
@@ -104,6 +49,57 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private float currentMovementSpeed = 0.0f;
     #endregion
+
+    #region Race Fields
+    // Holds values specific to the race game mode
+    private float startingRaceZ;
+    private float startingSensorDistance;
+    private float currentSensorDistance = Mathf.Infinity;
+
+    [Header("Race")]
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The amount of leeway alloted to players when having them return to the start")]
+    [SerializeField] private float returnDistanceLeeway = 0.25f;
+
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The amount of time to keep player animations during the race game mode")]
+    [SerializeField] private float raceAnimationDuration = 0.5f;
+
+    private float currentMovementDuration = 0.0f;
+
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The distance from the sensor where the patient wins")]
+    [SerializeField] private float winningDistance = 0.1f;
+    #endregion
+
+    #region Stationary
+    [Header("Stationary")]
+    [Range(0, 120)]
+    [Tooltip("The max size of frames to hold for checking if players have moved feed")]
+    [SerializeField] private int maxQueueSize = 25;
+
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The minimum height a patients foot must be raised by")]
+    [SerializeField] private float minUpHeight = 0.1f;
+
+    [Range(0.0f, 10.0f)]
+    [Tooltip("The maximum height a patients foot may be raised by (limits movementspeed")]
+    [SerializeField] private float maxUpHeight = 0.4f;
+
+    [Space(InspectorValues.SPACE_BETWEEN_EDITOR_ELEMENTS)]
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The amount of time movement lasts for")]
+    [SerializeField] private float minMovementTime = 0.5f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The amount of time movement lasts for")]
+    [SerializeField] private float maxMovementTime = 1.0f;
+
+    /// <summary>
+    /// Holds reference to the y positions of players feet.
+    /// </summary>
+    private Dictionary<JointType, Queue<float>> footTracking = new Dictionary<JointType, Queue<float>>();
     #endregion
 
     #region Animations
@@ -126,47 +122,22 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Kinnect
-    public Material BoneMaterial;
-
     private Dictionary<ulong, GameObject> _Bodies = new Dictionary<ulong, GameObject>();
     private BodySourceManager bodyManager;
 
-    private Dictionary<JointType, JointType> _BoneMap = new Dictionary<JointType, JointType>()
+    [SerializeField]
+    private bool isKnee = false;
+    private List<JointType> joints;
+    private List<JointType> kneeJoints = new List<JointType>
     {
-        { JointType.FootLeft, JointType.AnkleLeft },
-        { JointType.AnkleLeft, JointType.KneeLeft },
-        { JointType.KneeLeft, JointType.HipLeft },
-        { JointType.HipLeft, JointType.SpineBase },
-
-        { JointType.FootRight, JointType.AnkleRight },
-        { JointType.AnkleRight, JointType.KneeRight },
-        { JointType.KneeRight, JointType.HipRight },
-        { JointType.HipRight, JointType.SpineBase },
-
-        { JointType.HandTipLeft, JointType.HandLeft },
-        { JointType.ThumbLeft, JointType.HandLeft },
-        { JointType.HandLeft, JointType.WristLeft },
-        { JointType.ElbowLeft, JointType.ShoulderLeft },
-        { JointType.ShoulderLeft, JointType.SpineShoulder },
-        { JointType.WristLeft, JointType.ElbowLeft },
-
-        { JointType.HandTipRight, JointType.HandRight },
-        { JointType.ThumbRight, JointType.HandRight },
-        { JointType.HandRight, JointType.WristRight },
-        { JointType.WristRight, JointType.ElbowRight },
-        { JointType.ElbowRight, JointType.ShoulderRight },
-        { JointType.ShoulderRight, JointType.SpineShoulder },
-
-        { JointType.SpineBase, JointType.SpineMid },
-        { JointType.SpineMid, JointType.SpineShoulder },
-        { JointType.SpineShoulder, JointType.Neck },
-        { JointType.Neck, JointType.Head },
+        JointType.KneeLeft,
+        JointType.KneeRight
     };
 
-    private List<JointType> joints = new List<JointType>
+    private List<JointType> footJoints = new List<JointType>
     {
-        JointType.FootLeft,
-        JointType.FootRight
+        JointType.KneeLeft,
+        JointType.KneeRight
     };
     #endregion
     #endregion
@@ -178,7 +149,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void Awake()
     {
-        startingCharacterZ = transform.position.z;
+        startingRaceZ = transform.position.z;
 
         InitializeComponents();
         InitializeDictionaries();
@@ -199,6 +170,8 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void InitializeDictionaries()
     {
+        joints = isKnee ? kneeJoints : footJoints;
+
         foreach(JointType joint in joints)
         {
             footTracking.Add(joint, new Queue<float>());
@@ -224,11 +197,9 @@ public class PlayerMovement : MonoBehaviour
     {
         #region Get Kinect Data
         if (bodyManager == null) return;
-
         Body[] _data = bodyManager.GetData();
 
         if (_data == null) return;
-
         List<ulong> _trackedIds = new List<ulong>();
 
         foreach (var body in _data)
@@ -266,7 +237,7 @@ public class PlayerMovement : MonoBehaviour
                     _Bodies[body.TrackingId] = CreateBodyObject(body.TrackingId);
                 }
 
-                RefreshBodyObject(body, _Bodies[body.TrackingId]);
+                RefreshBodyObject(body);
             }
         }
         #endregion
@@ -281,40 +252,23 @@ public class PlayerMovement : MonoBehaviour
     {
         GameObject body = new GameObject("Body:" + id);
 
-        for (JointType jt = JointType.SpineBase; jt <= JointType.ThumbRight; jt++)
-        {
-            GameObject jointObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            jointObj.GetComponent<Renderer>().enabled = false;
-
-            /*
-            LineRenderer lr = jointObj.AddComponent<LineRenderer>();
-            lr.positionCount = 2;
-            lr.material = BoneMaterial;
-            lr.startWidth = 0.05f;
-            lr.endWidth = 0.05f;*/
-
-            jointObj.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-            jointObj.name = jt.ToString();
-            jointObj.transform.parent = body.transform;
-        }
-
         return body;
     }
 
-    private void RefreshBodyObject(Body body, GameObject bodyObject)
+    /// <summary>
+    /// Takes kinnect input to move the player in the game.
+    /// </summary>
+    /// <param name="body"></param>
+    private void RefreshBodyObject(Body body)
     {
         foreach (JointType joint in joints)
         {
             Joint sourceJoint = body.Joints[joint];
-            Vector3 targetPosition = GetVector3FromJoint(sourceJoint);
-
-            Transform jointObject = bodyObject.transform.Find(joint.ToString());
-            jointObject.position = targetPosition;
 
             switch (CurrentGameMode)
             {
                 case GameMode.RACE:
-                    RefreshRace(body);
+                    RaceMovement(body);
                     break;
                 case GameMode.STATIONARY:
                 default:
@@ -324,15 +278,10 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
-
-    private Vector3 GetVector3FromJoint(Joint joint)
-    {
-        return new Vector3(joint.Position.X * playerSize, joint.Position.Y * playerSize, joint.Position.Z * playerSize) + transform.position;
-    }
     #endregion
 
     #region Race Movement
-    private void RefreshRace(Body body)
+    private void RaceMovement(Body body)
     {
         var currentPosition = body.Joints[JointType.SpineBase].Position;
         var distance = Length(currentPosition);
@@ -363,12 +312,12 @@ public class PlayerMovement : MonoBehaviour
 
                     playerAnimator.SetBool(walkID, true);
                     
-                    if(currentAnimationDuration == 0)
+                    if(currentMovementDuration == 0)
                     {
                         StartCoroutine(StopMovingAnimations());
                     }
 
-                    currentAnimationDuration = minMovementTime;
+                    currentMovementDuration = raceAnimationDuration;
 
 
                     if (winningDistance > currentSensorDistance)
@@ -387,22 +336,24 @@ public class PlayerMovement : MonoBehaviour
     private void SetPlayerZ(float distance)
     {
         var pos = transform.position;
-        pos.z = (startingSensorDistance - distance) * playerSize + startingCharacterZ;
+        pos.z = (startingSensorDistance - distance) * playerSize + startingRaceZ;
 
         transform.position = pos;
     }
 
     private IEnumerator StopMovingAnimations()
     {
-        while (currentAnimationDuration > 0)
+        do
         {
             yield return new WaitForFixedUpdate();
-            currentAnimationDuration -= Time.fixedDeltaTime;
+            currentMovementDuration -= Time.fixedDeltaTime;
         }
+        while (currentMovementDuration > 0);
+
 
         print("Stop");
 
-        currentAnimationDuration = 0;
+        currentMovementDuration = 0;
         playerAnimator.SetBool(walkID, false);
     }
 
@@ -435,19 +386,42 @@ public class PlayerMovement : MonoBehaviour
 
         if(footTrackingQueue.Count == maxQueueSize)
         {
-            if(footTrackingQueue.Max() < sourceJoint.Position.Y)
+            if (isKnee)
             {
-                var distUp = sourceJoint.Position.Y - footTrackingQueue.Min();
-
-                if (distUp > minUpHeight)
+                if (footTrackingQueue.Max() > sourceJoint.Position.Z) // .006
                 {
-                    var newHeight = Mathf.Clamp(distUp, minUpHeight, maxUpHeight);
-                    CheckStateStationary(newHeight);
+                    var distUp = footTrackingQueue.Min() - sourceJoint.Position.Z;
+
+                    if (distUp > minUpHeight)
+                    {
+                        print(distUp);
+                        var newHeight = Mathf.Clamp(distUp, minUpHeight, maxUpHeight);
+                        CheckStateStationary(newHeight);
+                    }
                 }
+            }
+            else
+            {
+                if (footTrackingQueue.Max() < sourceJoint.Position.Y)
+                {
+                    var distUp = sourceJoint.Position.Y - footTrackingQueue.Min();
+
+                    if (distUp > minUpHeight)
+                    {
+                        print(distUp);
+                        var newHeight = Mathf.Clamp(distUp, minUpHeight, maxUpHeight);
+                        CheckStateStationary(newHeight);
+                    }
+                }
+
             }
 
             footTrackingQueue.Dequeue();
-            footTrackingQueue.Enqueue(sourceJoint.Position.Y);
+        }
+
+        if (isKnee)
+        {
+            footTrackingQueue.Enqueue(sourceJoint.Position.Z);
         }
         else
         {
@@ -466,7 +440,18 @@ public class PlayerMovement : MonoBehaviour
                 break;
 
             case LightState.GREEN:
-                movementRoutines.Enqueue(StartCoroutine(MovePlayerStationary(heightReached)));
+                var time = Mathf.Lerp(minMovementTime, maxMovementTime, Mathf.InverseLerp(minUpHeight, maxUpHeight, heightReached));
+
+                if (currentMovementDuration == 0)
+                {
+                    currentMovementDuration = time;
+                    StartCoroutine(MovePlayerStationary());
+                    //.Enqueue());
+                }
+                else if(currentMovementDuration < time)
+                {
+                    currentMovementDuration = time;
+                }
                 break;
 
             case LightState.OFF:
@@ -475,42 +460,21 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private IEnumerator MovePlayerStationary(float height)
+    private IEnumerator MovePlayerStationary()
     {
-        //var speed = Mathf.Lerp(minMovementSpeed, maxMovementSpeed, Mathf.InverseLerp(minUpHeight, maxUpHeight, height));
-        var time = Mathf.Lerp(minMovementTime, maxMovementTime, Mathf.InverseLerp(minUpHeight, maxUpHeight, height));
-
-        //print("Move Length Time: " + time);
-
-        yield return new WaitForSeconds(time);
-
-        /*
-        while (t > 0)
+        while (currentMovementDuration > 0)
         {
             yield return new WaitForEndOfFrame();
-            var tempT = 1.0f;
-            if (t > movementTime - movementSmoothTime)
-            {
-                tempT = Mathf.InverseLerp(movementTime, movementTime - movementSmoothTime, t);
-            }
-            else if(t < movementSmoothTime)
-            {
-                tempT = Mathf.InverseLerp(0.0f, 0.1f, t);
-            }
 
-            var tempSpeed = Mathf.Lerp(0, speed, tempT);
+            currentMovementDuration -= Time.deltaTime;
+        }
 
-            gameController.UpdatePoints();
-            transform.position += transform.forward * Time.deltaTime * tempSpeed;
-            t -= Time.deltaTime;
-        }*/
-
-        movementRoutines.Dequeue();
+        currentMovementDuration = 0;
     }
 
     private void UpdatePlayerPositionStationary()
     {
-        var modifier = movementRoutines.Count != 0 && gameController.lightState == LightState.GREEN ? 1 : -1;
+        var modifier = currentMovementDuration != 0 && gameController.lightState == LightState.GREEN ? 1 : -1;
 
         currentMovementSpeed += Time.fixedDeltaTime / movementSmoothTime * modifier;
         currentMovementSpeed = Mathf.Clamp(currentMovementSpeed, 0.0f, movementSpeed);

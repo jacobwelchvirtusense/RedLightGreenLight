@@ -28,6 +28,7 @@ public class GameTimerUIHandler : MonoBehaviour
     private void Awake()
     {
         timerText = GetComponent<TextMeshProUGUI>();
+        UpdateTimer(0);
     }
 
     /// <summary>

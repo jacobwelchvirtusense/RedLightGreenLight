@@ -51,6 +51,11 @@ public class GameController : MonoBehaviour
     private int failedRedLights = 0;
 
     /// <summary>
+    /// The time of green lights it took the user to complete the race.
+    /// </summary>
+    private float timeToComplete = 0.0f;
+
+    /// <summary>
     /// Holds true if the game will detect movement during a red light.
     /// </summary>
     [HideInInspector] public bool canDetectPenaltyMovement = false;
@@ -232,7 +237,6 @@ public class GameController : MonoBehaviour
     private void Awake()
     {
         InitializeComponents();
-        GameTimerUIHandler.UpdateTimer(0);
 
         StartCoroutine(CountdownLoop());
     }
@@ -257,7 +261,6 @@ public class GameController : MonoBehaviour
         // Sets the initial state
         GoToOffLight();
         int t = timeBeforeStart;
-        CountdownUIHandler.UpdateCountdown(0);
 
         yield return new WaitForSeconds(1);
 
@@ -283,6 +286,10 @@ public class GameController : MonoBehaviour
     #endregion
 
     #region Timer
+    /// <summary>
+    /// A timer that controls how long the game session will be.
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator GameTimer()
     {
         int t = Mathf.RoundToInt(Mathf.Lerp(minTimerAmount, maxTimerAmount, currentTimer));
@@ -302,7 +309,7 @@ public class GameController : MonoBehaviour
     }
     #endregion
 
-    #region State Handling
+    #region Lights
     #region Red
     /// <summary>
     /// Handles the event of failing a red light.
@@ -310,25 +317,31 @@ public class GameController : MonoBehaviour
     /// <returns></returns>
     public IEnumerator FailedRedRoutine()
     {
+        // Applies penalty and stops new lights from happening
         failedRedLights++;
         StartRedGreenLoop(false);
         PlaySound(failSound, failSoundVolume);
         StartCoroutine(MainCameraHandler.ApplyCameraShake(cameraShakeAmplitude, cameraShakeFrequency, cameraShakeDuration));
         UpdatePoints(-penaltyPoints);
+
+        // Waits a duration before giving a green light
         yield return new WaitForSeconds(penaltyDuration);
 
         switch (CurrentGameMode)
         {
             case GameMode.RACE:
-                ReturnStartUIHandler.EnableText(true);
+                ReturnStartUIHandler.EnableText(true);  // Tells the user to go back to start
                 break;
             case GameMode.STATIONARY:
             default:
-                StartRedGreenLoop(true);
+                StartRedGreenLoop(true);    // Starts the process of giving red & green lights
                 break;
         }
     }
 
+    /// <summary>
+    /// Restarts the game once the player has returned to the starting position.
+    /// </summary>
     public void RestartGameRace()
     {
         ReturnStartUIHandler.EnableText(false);
@@ -347,7 +360,6 @@ public class GameController : MonoBehaviour
         PointUIHandler.UpdatePoints(updateAmount);
     }
     #endregion
-    #endregion
 
     #region Change Light
     #region Red Green Loop
@@ -357,7 +369,7 @@ public class GameController : MonoBehaviour
     /// <param name="shouldStart">Holds true if the loop should be started.</param>
     private void StartRedGreenLoop(bool shouldStart)
     {
-        if(redGreenLoopReference == null)
+        if (redGreenLoopReference == null)
         {
             if (shouldStart)
             {
@@ -379,12 +391,24 @@ public class GameController : MonoBehaviour
     {
         while (true)
         {
+            #region Green Light
             GoToGreenLight();
-            yield return new WaitForSeconds(GenerateRandomValue(minTimeBeforeRed, maxTimeBeforeRed));
-            
-            if(!disableRed)
-            GoToRedLight();
+
+            var t = GenerateRandomValue(minTimeBeforeRed, maxTimeBeforeRed);
+
+            while (t > 0)
+            {
+                yield return new WaitForFixedUpdate();
+                timeToComplete += Time.fixedDeltaTime;
+                t -= Time.fixedDeltaTime;
+            }
+            #endregion
+
+            #region Red Light
+            if (!disableRed) GoToRedLight();
+
             yield return new WaitForSeconds(GenerateRandomValue(minTimeBeforeGreen, maxTimeBeforeGreen));
+            #endregion
         }
     }
 
@@ -463,8 +487,13 @@ public class GameController : MonoBehaviour
     }
     #endregion
     #endregion
+    #endregion
 
     #region End Game
+    /// <summary>
+    /// Handles the events needed for the end state of the game.
+    /// </summary>
+    /// <returns></returns>
     public IEnumerator EndGame()
     {
         yield return new WaitForEndOfFrame();
@@ -476,8 +505,22 @@ public class GameController : MonoBehaviour
     #region Output
     private void OutputData()
     {
-        //failedRedLights;
-        //movementTrackingMethod;
+        print("------------Output------------");
+        print("Times Failed: " + failedRedLights);
+        print("Current Movement Tracking Difficulty: " + CurrentMovementTrackingMethod.ToString());
+        print("Game Mode: " + CurrentGameMode.ToString());
+
+        switch (CurrentGameMode)
+        {
+            case GameMode.RACE:
+                print("Time to complete: " + timeToComplete);
+                break;
+            default:
+            case GameMode.STATIONARY:
+                var duration = Mathf.RoundToInt(Mathf.Lerp(minTimerAmount, maxTimerAmount, currentTimer));
+                print("Duration: " + duration);
+                break;
+        }
     }
     #endregion
     #endregion

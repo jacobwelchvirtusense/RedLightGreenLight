@@ -143,7 +143,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minTimerAmount: 30
   maxTimerAmount: 120
-  currentTimer: 1
+  currentTimer: 0.5
   disableRed: 0
   canDetectPenaltyMovement: 0
   lightState: 2
@@ -156,21 +156,21 @@ MonoBehaviour:
   - 1
   - 0.7
   - 0.5
-  penaltyDuration: 1
+  penaltyDuration: 1.75
   minTimeBeforeRed: 3.5
   maxTimeBeforeRed: 5.5
   minTimeBeforeGreen: 2
   maxTimeBeforeGreen: 3
   cameraShakeAmplitude: 1.5
   cameraShakeFrequency: 1.5
-  cameraShakeDuration: 1
+  cameraShakeDuration: 1.25
   countDownSound: {fileID: 8300000, guid: aca95b6c5936f9a42b7a9cd9adb477af, type: 3}
   countDownSoundVolume: 1
   redLightSound: {fileID: 8300000, guid: 8f0ce46bcfb30404a8ad1d230065f99c, type: 3}
   redLightSoundVolume: 1
   greenLightSound: {fileID: 8300000, guid: 99d51511e824dad41b8884ba3dc5908f, type: 3}
   greenLightSoundVolume: 1
-  failSound: {fileID: 8300000, guid: 219a71be504af81498d0ac16b2c9a5e6, type: 3}
+  failSound: {fileID: 8300000, guid: f2d191b0cd672964cba3b1d67afea3d9, type: 3}
   failSoundVolume: 1
   pointsPerMovement: 10
   penaltyPoints: 3000
