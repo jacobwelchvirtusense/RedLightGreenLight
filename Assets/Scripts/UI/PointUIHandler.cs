@@ -56,7 +56,12 @@ public class PointUIHandler : MonoBehaviour
         PointsText.Remove(null);
 
         // Updates all point 
-        foreach(TextMeshProUGUI text in PointsText) text.text = currentPoints.ToString();
+        foreach(TextMeshProUGUI text in PointsText) text.text = PointsToMeters() + "m";
+    }
+
+    public static int PointsToMeters()
+    {
+        return (int)(currentPoints / 100.0f);
     }
     #endregion
 }

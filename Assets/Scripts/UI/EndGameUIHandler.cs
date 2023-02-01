@@ -18,7 +18,19 @@ public class EndGameUIHandler : MonoBehaviour
     /// <summary>
     /// The return to start text.
     /// </summary>
-    private static TextMeshProUGUI endGameMessage;
+    private static GameObject endGameMessage;
+
+    [SerializeField] private EndGameDataDisplay metersDisplayed;
+    [SerializeField] private EndGameDataDisplay timeSpent;
+    [SerializeField] private EndGameDataDisplay fastestSpeed;
+    [SerializeField] private EndGameDataDisplay redLightsFailed;
+    [SerializeField] private EndGameDataDisplay metersLost;
+
+    private static EndGameDataDisplay MetersDisplayed;
+    private static EndGameDataDisplay TimeSpent;
+    private static EndGameDataDisplay FastestSpeed;
+    private static EndGameDataDisplay RedLightsFailed;
+    private static EndGameDataDisplay MetersLost;
     #endregion
 
     #region Functions
@@ -27,8 +39,19 @@ public class EndGameUIHandler : MonoBehaviour
     /// </summary>
     private void Awake()
     {
+        /*
         endGameMessage = GetComponent<TextMeshProUGUI>();
         endGameMessage.enabled = true;
+        */
+
+        endGameMessage = gameObject;
+
+        MetersDisplayed = metersDisplayed;
+        TimeSpent = timeSpent;
+        FastestSpeed = fastestSpeed;
+        RedLightsFailed = redLightsFailed;
+        MetersLost = metersLost;
+
         gameObject.SetActive(false);
     }
 
@@ -40,7 +63,16 @@ public class EndGameUIHandler : MonoBehaviour
     {
         if (endGameMessage == null) return;
 
-        endGameMessage.gameObject.SetActive(shouldEnable);
+        endGameMessage.SetActive(shouldEnable);
+    }
+
+    public static void UpdateEndGameData(int metersTraveled, int timeSpent, float fastestSpeed, int redLightsFailed, int metersLost)
+    {
+        MetersDisplayed.UpdateText(metersTraveled.ToString() + "m");
+        TimeSpent.UpdateText(GameTimerUIHandler.TimeToString(timeSpent));
+        FastestSpeed.UpdateText(fastestSpeed.ToString() + "m/s");
+        RedLightsFailed.UpdateText(redLightsFailed.ToString());
+        MetersLost.UpdateText(metersLost.ToString() + "m");
     }
     #endregion
 }

@@ -24,6 +24,15 @@ public class MainCameraHandler : MonoBehaviour
     /// The camera shake for the cinemachine camera.
     /// </summary>
     private static CinemachineBasicMultiChannelPerlin cameraShake;
+
+    private static MainCameraHandler instance;
+
+    [Tooltip("The follow target of the camera")]
+    [SerializeField] private Transform cameraFollowTarget;
+    
+    private static Transform CameraFollowTarget;
+
+    private const float spinSpeed = 180;
     #endregion
 
     #region Functions
@@ -32,6 +41,8 @@ public class MainCameraHandler : MonoBehaviour
     /// </summary>
     private void Awake()
     {
+        instance = this;
+        CameraFollowTarget = cameraFollowTarget;
         mainVirtualCamera = GetComponentInChildren<CinemachineVirtualCamera>();
 
         if (mainVirtualCamera != null) cameraShake = mainVirtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
@@ -66,6 +77,23 @@ public class MainCameraHandler : MonoBehaviour
         // Resets the camera shake
         cameraShake.m_AmplitudeGain = 0;
         cameraShake.m_FrequencyGain = 0;
+    }
+
+    public static void AnimateCamera(string animationTag)
+    {
+        if(animationTag == "Win")
+        {
+            instance.StartCoroutine(SpinOnWin());
+        }
+    }
+
+    private static IEnumerator SpinOnWin()
+    {
+        while (true)
+        {
+            CameraFollowTarget.Rotate(new Vector3(0, spinSpeed * Time.deltaTime, 0));
+            yield return new WaitForEndOfFrame();
+        }
     }
     #endregion
 }

@@ -91,6 +91,10 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("The max size of frames to hold for checking if players have moved feed")]
     [SerializeField] private int maxQueueSize = 25;
 
+    [Range(0, 20)]
+    [Tooltip("The max size of frames to check for wobble")]
+    [SerializeField] private int wobbleCheckSize = 5;
+
     [Range(0.0f, 10.0f)]
     [Tooltip("The minimum height a patients foot must be raised by")]
     [SerializeField] private float minUpHeightKnee = 0.1f;
@@ -120,7 +124,7 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>
     /// Holds reference to the y positions of players feet.
     /// </summary>
-    private Dictionary<JointType, Queue<float>> footTracking = new Dictionary<JointType, Queue<float>>();
+    private Dictionary<JointType, Queue<Vector3>> footTracking = new Dictionary<JointType, Queue<Vector3>>();
     #endregion
 
     #region Animations
@@ -138,6 +142,10 @@ public class PlayerMovement : MonoBehaviour
     private string walkAnimationTag = "IsWalking";
     private int walkID;
 
+    // Animator ID for when the player is breathing
+    private string breatheAnimationTag = "IsBreathing";
+    private int breatheID;
+
     // Animator ID for failing a red light in the stationary mode
     private string hitAnimationTag = "IsHit";
     private int hitID;
@@ -145,6 +153,10 @@ public class PlayerMovement : MonoBehaviour
     // Animator ID for failing a red light in the race mode
     private string deathAnimationTag = "IsDead";
     private int deathID;
+
+    // Animator ID for winning a race
+    private string winAnimaitonTag = "HasWon";
+    private int winID;
     #endregion
 
     //TODO
@@ -201,7 +213,7 @@ public class PlayerMovement : MonoBehaviour
 
         foreach(JointType joint in joints)
         {
-            footTracking.Add(joint, new Queue<float>());
+            footTracking.Add(joint, new Queue<Vector3>());
         }
     }
 
@@ -213,6 +225,8 @@ public class PlayerMovement : MonoBehaviour
         walkID = Animator.StringToHash(walkAnimationTag);
         hitID = Animator.StringToHash(hitAnimationTag);
         deathID = Animator.StringToHash(deathAnimationTag);
+        winID = Animator.StringToHash(winAnimaitonTag);
+        breatheID = Animator.StringToHash(breatheAnimationTag);
     }
     #endregion
 
@@ -224,17 +238,30 @@ public class PlayerMovement : MonoBehaviour
     {
         #region Get Kinect Data
         if (bodyManager == null) return;
+
         Body[] _data = bodyManager.GetData();
 
         if (_data == null) return;
+
         List<ulong> _trackedIds = new List<ulong>();
+
+        ulong centerID = 0;
+        float currentLow = Mathf.Infinity;
 
         foreach (var body in _data)
         {
             if (body == null) continue;
 
-            if (body.IsTracked) _trackedIds.Add(body.TrackingId);
+            var lowCheck = Mathf.Abs(body.Joints[JointType.SpineBase].Position.X);
+
+            if (body.IsTracked && lowCheck < currentLow)
+            {
+                centerID = body.TrackingId;
+                currentLow = lowCheck;
+            }
         }
+
+        if (centerID != 0) _trackedIds.Add(centerID);
         #endregion
 
         #region Delete Untracked Bodies
@@ -255,7 +282,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (body == null) continue;
 
-            if (body.IsTracked)
+            if (body.IsTracked && body.TrackingId == centerID)
             {
                 if (!_Bodies.ContainsKey(body.TrackingId))
                 {
@@ -310,16 +337,51 @@ public class PlayerMovement : MonoBehaviour
                         CheckStateStationary(height);
                     }*/
 
-                    StationaryMovement(sourceJoint, joint);
+                    StationaryMovement(sourceJoint, joint, body);
                 }
-
-                //print(body.Joints[JointType.KneeLeft].Position.Y - body.Joints[JointType.AnkleLeft].Position.Y);
 
                 UpdateCharacterPositionStationary();
                 break;
         }
 
 
+    }
+
+    float minY, maxY;
+    float minZ, maxZ;
+
+    private bool WobbleDetection(List<Vector3> trackingQueue)
+    {
+        if (trackingQueue.Count < 3) return false;
+
+        var first = trackingQueue.First();
+        var last = trackingQueue.Last();
+        var displacement = (last - first).magnitude;
+        Vector3 minVector = first, maxVector = last;
+
+        foreach(var pos in trackingQueue)
+        {
+            minVector = Vector3.Min(minVector, pos);
+            maxVector = Vector3.Max(maxVector, pos);
+        }
+
+        minY = minVector.y;
+        maxY = maxVector.y;
+        minZ = minVector.z;
+        maxZ = maxVector.z;
+
+        var diff = maxVector - minVector;
+        var maxDistance = diff.magnitude;
+        var threshold = displacement * 1.25f;
+
+        if(maxDistance > 0.0254f * 3)
+        {
+            print("Failed Wobble Test");
+        }
+
+        if (isKnee) return false;
+
+        return maxDistance > 0.0254f*5;
     }
     #endregion
 
@@ -396,6 +458,7 @@ public class PlayerMovement : MonoBehaviour
         if (currentMovementDuration == 0)
         {
             playerAnimator.SetBool(walkID, true);
+            playerAnimator.SetBool(breatheID, true);
 
             StartCoroutine(StopMovingRaceAnimations());
         }
@@ -456,6 +519,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (winningDistance > currentBestSensorDistance)
         {
+            playerAnimator.SetTrigger(winID);
             StartCoroutine(gameController.EndGame());
         }
     }
@@ -477,62 +541,64 @@ public class PlayerMovement : MonoBehaviour
 
     //TODO Currently working on updating the movement detection
     #region Stationary Movement
-    private void StationaryMovement(Joint sourceJoint, JointType joint)
+    private void StationaryMovement(Joint sourceJoint, JointType joint, Body body)
     {
         var footTrackingQueue = footTracking[joint];
 
-        if(footTrackingQueue.Count == maxQueueSize)
+        footTrackingQueue.Enqueue(new Vector3(sourceJoint.Position.X, sourceJoint.Position.Y, sourceJoint.Position.Z));
+
+        if (footTrackingQueue.Count == maxQueueSize)
         {
-            #region Knee Tracking
-            if (isKnee)
+            if (!WobbleDetection(footTrackingQueue.ToList().GetRange(maxQueueSize-wobbleCheckSize, wobbleCheckSize)))
             {
-                if (footTrackingQueue.Max() > sourceJoint.Position.Z)
-                {
-                    var distUp = footTrackingQueue.Min() - sourceJoint.Position.Z;
+                /*
+                if (joint == JointType.AnkleLeft)
+                    print("Angle: " + Vector3.Angle(GetVector3FromJoint(sourceJoint), GetVector3FromJoint(body.Joints[JointType.KneeLeft])));*/
 
-                    if (distUp > minUpHeightKnee)
+
+                if (isKnee)
+                {
+                    if (minZ == sourceJoint.Position.Z)
                     {
-                        print(distUp);
-                        var newHeight = Mathf.Clamp(distUp, minUpHeightKnee, maxUpHeightKnee);
-                        CheckStateStationary(newHeight);
+                        var distUp = maxZ - sourceJoint.Position.Z;
+
+                        if (distUp > minUpHeightKnee)
+                        {
+                            print("Dist Up: " + distUp);
+                            var newHeight = Mathf.Clamp(distUp, minUpHeightKnee, maxUpHeightKnee);
+                            CheckStateStationary(newHeight);
+                        }
                     }
                 }
-            }
-            #endregion
-
-            #region Foot Tracking
-            else
-            {
-                if (footTrackingQueue.Max() < sourceJoint.Position.Y)
+                else
                 {
-                    var distUp = sourceJoint.Position.Y - footTrackingQueue.Min();
-
-                    if (distUp > minUpHeightFoot)
+                    if (maxY == sourceJoint.Position.Y)
                     {
+                        var distUp = sourceJoint.Position.Y - minY;
                         print("Dist Up: " + distUp);
-                        var newHeight = Mathf.Clamp(distUp, minUpHeightFoot, maxUpHeightFoot);
-                        CheckStateStationary(newHeight);
+
+                        if (distUp > minUpHeightFoot)
+                        {
+                            var newHeight = Mathf.Clamp(distUp, minUpHeightFoot, maxUpHeightFoot);
+                            CheckStateStationary(newHeight);
+                        }
                     }
                 }
 
             }
-            #endregion
-
-            print("Variance: " + (footTrackingQueue.Max() - footTrackingQueue.Min()));
 
             footTrackingQueue.Dequeue();
         }
+    }
 
-        #region Enqueue Current Frame
-        if (isKnee)
-        {
-            footTrackingQueue.Enqueue(sourceJoint.Position.Z);
-        }
-        else
-        {
-            footTrackingQueue.Enqueue(sourceJoint.Position.Y);
-        }
-        #endregion
+    /// <summary>
+    /// Gets the vector3 position of the joint object.
+    /// </summary>
+    /// <param name="joint">The joint whose position is being coverted to Vector3.</param>
+    /// <returns></returns>
+    private Vector3 GetVector3FromJoint(Joint joint)
+    {
+        return new Vector3(joint.Position.X * playerSize, joint.Position.Y * playerSize, joint.Position.Z * playerSize);
     }
 
     private void CheckStateStationary(float heightReached)
@@ -593,12 +659,14 @@ public class PlayerMovement : MonoBehaviour
         currentMovementSpeed += Time.fixedDeltaTime / movementSmoothTime * modifier;
         currentMovementSpeed = Mathf.Clamp(currentMovementSpeed, 0.0f, movementSpeedStationary);
 
-        bool isWalking = currentMovementSpeed != 0 && !hasFailedRedLight;
+        // Sets animation active/inactive
+        bool isWalking = currentMovementSpeed != 0 && !hasFailedRedLight && gameController.lightState != LightState.OFF;
         playerAnimator.SetBool(walkID, isWalking);
+        playerAnimator.SetBool(breatheID, playerAnimator.GetBool(breatheID) || isWalking);
 
-        if (isWalking && gameController.lightState == LightState.GREEN)
+        if (isWalking)
         {
-            gameController.UpdatePoints();
+            if(gameController.lightState == LightState.GREEN) gameController.UpdatePoints();
 
             transform.position += transform.forward * Time.fixedDeltaTime * currentMovementSpeed;
         }
