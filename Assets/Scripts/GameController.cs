@@ -14,6 +14,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using static InspectorValues;
 using static GameSettings;
+using UnityEngine.SceneManagement;
+using UnityEngine.SocialPlatforms.Impl;
 
 using Assets.Scripts;
 
@@ -276,6 +278,12 @@ public class GameController : MonoBehaviour
             
         }
 
+    }
+
+    private void Start()
+    {
+        int t = Mathf.RoundToInt(Mathf.Lerp(minTimerAmount, maxTimerAmount, currentTimer));
+        GameTimerUIHandler.UpdateTimer(t);  // Initializes the countdown
     }
 
     /// <summary>
@@ -555,7 +563,10 @@ public class GameController : MonoBehaviour
             default:
             case GameMode.STATIONARY:
                 var duration = Mathf.RoundToInt(Mathf.Lerp(minTimerAmount, maxTimerAmount, currentTimer));
+                var meters = PointUIHandler.PointsToMeters();
                 print("Duration: " + duration);
+
+                EndGameUIHandler.UpdateEndGameData(meters, duration, meters/(float)duration, failedRedLights, (int)((penaltyPoints/100.0f)*failedRedLights));
                 break;
         }
     }
@@ -573,6 +584,21 @@ public class GameController : MonoBehaviour
         if (audioSource == null || soundClip == null) return;
 
         audioSource.PlayOneShot(soundClip, soundVolume);
+    }
+    #endregion
+
+    #region End Screen Actions
+    public void ExitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+        Application.Quit();
+    }
+
+    public void PlayAgain()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     #endregion
     #endregion

@@ -40,9 +40,21 @@ public class GameTimerUIHandler : MonoBehaviour
         // Ensures the text isn't null
         if (timerText == null) return;
 
-        // Updates the countdown UI 
-        timerText.text = "Time Left: " + currentTimer.ToString();
-        timerText.gameObject.SetActive(currentTimer != 0);
+        // Updates the timer UI 
+        timerText.text = TimeToString(currentTimer);
+        //timerText.gameObject.SetActive(currentTimer != 0);
+    }
+
+    public static string TimeToString(int currentTimer)
+    {
+        var minutes = currentTimer / 60;
+        var leftOverSeconds = (currentTimer - (minutes * 60));
+        string secondsDisplayed = "";
+
+        if (leftOverSeconds < 10) secondsDisplayed += "0";
+        secondsDisplayed += leftOverSeconds;
+
+        return minutes.ToString() + ":" + secondsDisplayed;
     }
     #endregion
 }
