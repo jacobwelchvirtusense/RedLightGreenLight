@@ -17,6 +17,8 @@ using static GameSettings;
 using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 
+using Assets.Scripts;
+
 [RequireComponent(typeof(AudioSource))]
 public class GameController : MonoBehaviour
 {
@@ -25,6 +27,7 @@ public class GameController : MonoBehaviour
     /// Reference to the Game Controller in the scene.
     /// </summary>
     public static GameController gameController { get; private set; }
+    Subprocess pipe;
 
     #region Timer
     [Header("Timer")]
@@ -241,6 +244,40 @@ public class GameController : MonoBehaviour
         InitializeComponents();
 
         StartCoroutine(CountdownLoop());
+        var args = System.Environment.GetCommandLineArgs();
+        Application.runInBackground = true;
+
+
+
+
+        string pipeName = null;
+
+        // Ugly hack
+        if (args.Length >= 2)
+        {
+            if (args[1] == "-adapter")
+            {
+                if (args.Length >= 4)
+                {
+                    pipeName = args[3];
+                }
+              
+            }
+           
+        }
+        
+
+
+
+        if (pipeName != null)
+        {
+            pipe = new Subprocess(pipeName);
+            pipe.Read();
+
+            var msg = pipe.DequeueMessage();
+            
+        }
+
     }
 
     private void Start()
