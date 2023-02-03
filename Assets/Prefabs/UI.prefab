@@ -191,10 +191,8 @@ GameObject:
   - component: {fileID: 8942915523406901394}
   - component: {fileID: 2349948290889118422}
   - component: {fileID: 4481730988556751842}
-  - component: {fileID: 3138501765736919218}
   - component: {fileID: 1676227005}
   - component: {fileID: 1676227003}
-  - component: {fileID: 1676227004}
   m_Layer: 5
   m_Name: Move
   m_TagString: Untagged
@@ -260,21 +258,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!111 &3138501765736919218
-Animation:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 701349541914308318}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Animation: {fileID: 7400000, guid: dd0d0c1665d1fe14ab40fe5309a6516c, type: 2}
-  m_Animations: []
-  m_WrapMode: 0
-  m_PlayAutomatically: 0
-  m_AnimatePhysics: 0
-  m_CullingType: 0
 --- !u!95 &1676227005
 Animator:
   serializedVersion: 5
@@ -308,18 +291,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LightState: 1
---- !u!114 &1676227004
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 701349541914308318}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16d03d5d4c6ca4e4a924a8535fa581ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &714652392413381933
 GameObject:
   m_ObjectHideFlags: 0
@@ -1818,10 +1789,8 @@ GameObject:
   - component: {fileID: 5789346157966921228}
   - component: {fileID: 3877170312332044757}
   - component: {fileID: 1123662237016745800}
-  - component: {fileID: 2459487315297168510}
   - component: {fileID: 7092258846712669690}
   - component: {fileID: 1276344241727659015}
-  - component: {fileID: 6322112375364323661}
   m_Layer: 5
   m_Name: Stop
   m_TagString: Untagged
@@ -1887,21 +1856,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!111 &2459487315297168510
-Animation:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8881277212685637655}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Animation: {fileID: 7400000, guid: dd0d0c1665d1fe14ab40fe5309a6516c, type: 2}
-  m_Animations: []
-  m_WrapMode: 0
-  m_PlayAutomatically: 0
-  m_AnimatePhysics: 0
-  m_CullingType: 0
 --- !u!95 &7092258846712669690
 Animator:
   serializedVersion: 5
@@ -1935,18 +1889,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LightState: 0
---- !u!114 &6322112375364323661
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8881277212685637655}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16d03d5d4c6ca4e4a924a8535fa581ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &8273335481384298446
 PrefabInstance:
   m_ObjectHideFlags: 0

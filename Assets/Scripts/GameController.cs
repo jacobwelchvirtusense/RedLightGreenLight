@@ -361,11 +361,11 @@ public class GameController : MonoBehaviour
     /// <summary>
     /// Updates the player's current point total.
     /// </summary>
-    public void UpdatePoints(int updateAmount = 0)
+    public void UpdatePoints(int updateAmount = 0, float updateAmountModifier = 1)
     {
         if (updateAmount == 0) updateAmount = pointsPerMovement;
 
-        PointUIHandler.UpdatePoints(updateAmount);
+        PointUIHandler.UpdatePoints((int)(updateAmount*updateAmountModifier));
     }
     #endregion
 

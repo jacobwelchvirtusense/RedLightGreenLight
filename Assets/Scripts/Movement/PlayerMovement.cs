@@ -36,7 +36,7 @@ public class PlayerMovement : MonoBehaviour
 
     #region Speed
     [Header("Speed")]
-    [Range(0.0f, 0.5f)]
+    [Range(0.0f, 20.0f)]
     [Tooltip("The amount of time lerping in and out of movement")]
     [SerializeField] private float movementSmoothTime = 0.2f;
 
@@ -87,6 +87,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private float movementSpeedStationary = 7.0f;
 
+    [Range(0.0f, 5.0f)]
+    [Tooltip("The input delay between acceptable inputs")]
+    [SerializeField] private float movementAnimationThreshold = 1.5f;
+
     [Range(0, 120)]
     [Tooltip("The max size of frames to hold for checking if players have moved feed")]
     [SerializeField] private int maxQueueSize = 25;
@@ -113,6 +117,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Space(InspectorValues.SPACE_BETWEEN_EDITOR_ELEMENTS)]
 
+    #region Movement Times
     [Range(0.0f, 2.0f)]
     [Tooltip("The amount of time movement lasts for")]
     [SerializeField] private float minMovementTime = 0.5f;
@@ -120,11 +125,50 @@ public class PlayerMovement : MonoBehaviour
     [Range(0.0f, 2.0f)]
     [Tooltip("The amount of time movement lasts for")]
     [SerializeField] private float maxMovementTime = 1.0f;
+    #endregion
+
+    [Space(InspectorValues.SPACE_BETWEEN_EDITOR_ELEMENTS)]
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The input delay between acceptable inputs")]
+    [SerializeField] private float jointInputDelay = 0.15f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("How long each speed increment is held for")]
+    [SerializeField] private float inputSpeedHoldTime = 0.5f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The increment for each input")]
+    [SerializeField] private float inputSpeedIncrement = 0.3f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The increment for each input")]
+    [SerializeField] private float speedIncrementEaseInTime = 0.3f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The increment for each input")]
+    [SerializeField] private float speedIncrementEaseOutTime = 0.3f;
+
+    [Range(0.0f, 5.0f)]
+    [Tooltip("The max speed modifier the user can reach")]
+    [SerializeField] private float maxStationarySpeedModifier = 2.0f;
+
+    /// <summary>
+    /// The current speed modifier for the player.
+    /// </summary>
+    private float stationarySpeedModifier = 0.0f;
+
+    private float StationarySpeedModifier { get => Mathf.Clamp(stationarySpeedModifier, 0.0f, maxStationarySpeedModifier); }
 
     /// <summary>
     /// Holds reference to the y positions of players feet.
     /// </summary>
     private Dictionary<JointType, Queue<Vector3>> footTracking = new Dictionary<JointType, Queue<Vector3>>();
+
+    /// <summary>
+    /// Holds reference to the y positions of players feet.
+    /// </summary>
+    private Dictionary<JointType, bool> footAcceptingInputs = new Dictionary<JointType, bool>();
     #endregion
 
     #region Animations
@@ -214,6 +258,7 @@ public class PlayerMovement : MonoBehaviour
         foreach(JointType joint in joints)
         {
             footTracking.Add(joint, new Queue<Vector3>());
+            footAcceptingInputs.Add(joint, true);
         }
     }
 
@@ -544,18 +589,12 @@ public class PlayerMovement : MonoBehaviour
     private void StationaryMovement(Joint sourceJoint, JointType joint, Body body)
     {
         var footTrackingQueue = footTracking[joint];
-
         footTrackingQueue.Enqueue(new Vector3(sourceJoint.Position.X, sourceJoint.Position.Y, sourceJoint.Position.Z));
 
         if (footTrackingQueue.Count == maxQueueSize)
         {
             if (!WobbleDetection(footTrackingQueue.ToList().GetRange(maxQueueSize-wobbleCheckSize, wobbleCheckSize)))
             {
-                /*
-                if (joint == JointType.AnkleLeft)
-                    print("Angle: " + Vector3.Angle(GetVector3FromJoint(sourceJoint), GetVector3FromJoint(body.Joints[JointType.KneeLeft])));*/
-
-
                 if (isKnee)
                 {
                     if (minZ == sourceJoint.Position.Z)
@@ -564,7 +603,12 @@ public class PlayerMovement : MonoBehaviour
 
                         if (distUp > minUpHeightKnee)
                         {
-                            print("Dist Up: " + distUp);
+                            if (footAcceptingInputs[joint])
+                            {
+                                StartCoroutine(DelayFootInputStationary(joint));
+                                StartCoroutine(HoldStationaryModScore());
+                            }
+
                             var newHeight = Mathf.Clamp(distUp, minUpHeightKnee, maxUpHeightKnee);
                             CheckStateStationary(newHeight);
                         }
@@ -590,6 +634,53 @@ public class PlayerMovement : MonoBehaviour
             footTrackingQueue.Dequeue();
         }
     }
+
+    private IEnumerator DelayFootInputStationary(JointType joint)
+    {
+        footAcceptingInputs[joint] = false;
+
+        yield return new WaitForSeconds(jointInputDelay);
+
+        footAcceptingInputs[joint] = true;
+    }
+
+    #region Speed Modifier
+    private void UpdateStationaryModifier(float modifier)
+    {
+        stationarySpeedModifier += modifier;
+        stationarySpeedModifier = Mathf.Clamp(stationarySpeedModifier, 0.0f, Mathf.Infinity);
+    }
+
+    private IEnumerator HoldStationaryModScore()
+    {
+        StartCoroutine(ModScoreEaseLoop(1, speedIncrementEaseInTime));
+
+        yield return new WaitForSeconds(inputSpeedHoldTime);
+
+        StartCoroutine(ModScoreEaseLoop(-1, speedIncrementEaseOutTime));
+    }
+
+    private IEnumerator ModScoreEaseLoop(int incrementDirection, float easeTime)
+    {
+        var t = easeTime;
+        var totalChanged = 0.0f;
+
+        while (t > 0.0f)
+        {
+            var toAdd = inputSpeedIncrement * incrementDirection * Time.fixedDeltaTime / easeTime;
+            t -= Time.fixedDeltaTime;
+            totalChanged += toAdd;
+
+            UpdateStationaryModifier(toAdd);
+            yield return new WaitForFixedUpdate();
+        }
+
+        print("total changed: " + totalChanged);
+        print("Adjustment: " + (inputSpeedIncrement - totalChanged * incrementDirection));
+
+        UpdateStationaryModifier((inputSpeedIncrement - totalChanged*incrementDirection)*incrementDirection);
+    }
+    #endregion
 
     /// <summary>
     /// Gets the vector3 position of the joint object.
@@ -654,19 +745,22 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void UpdateCharacterPositionStationary()
     {
-        var modifier = currentMovementDuration != 0 ? 1 : -1;
+        var modifier = currentMovementDuration != 0 ? 1 : 0;
 
-        currentMovementSpeed += Time.fixedDeltaTime / movementSmoothTime * modifier;
-        currentMovementSpeed = Mathf.Clamp(currentMovementSpeed, 0.0f, movementSpeedStationary);
+        //stationarySpeedModifier = 1;
+        currentMovementSpeed = Mathf.Lerp(currentMovementSpeed, movementSpeedStationary * StationarySpeedModifier * modifier, Time.fixedDeltaTime*movementSmoothTime);
+
+        //currentMovementSpeed += Time.fixedDeltaTime / movementSmoothTime * modifier * stationarySpeedModifier;
+        //currentMovementSpeed = Mathf.Clamp(currentMovementSpeed, 0.0f, );
 
         // Sets animation active/inactive
-        bool isWalking = currentMovementSpeed != 0 && !hasFailedRedLight && gameController.lightState != LightState.OFF;
+        bool isWalking = currentMovementSpeed > movementAnimationThreshold && !hasFailedRedLight && gameController.lightState != LightState.OFF;
         playerAnimator.SetBool(walkID, isWalking);
         playerAnimator.SetBool(breatheID, playerAnimator.GetBool(breatheID) || isWalking);
 
         if (isWalking)
         {
-            if(gameController.lightState == LightState.GREEN) gameController.UpdatePoints();
+            if(gameController.lightState == LightState.GREEN) gameController.UpdatePoints(0, StationarySpeedModifier);
 
             transform.position += transform.forward * Time.fixedDeltaTime * currentMovementSpeed;
         }
