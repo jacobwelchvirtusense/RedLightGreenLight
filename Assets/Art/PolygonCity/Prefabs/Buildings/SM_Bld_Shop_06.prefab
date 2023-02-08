@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 64902158043125938}
   - component: {fileID: -7123584224349166}
   - component: {fileID: 3701930030508152342}
+  - component: {fileID: -3463345487040051712}
   m_Layer: 0
   m_Name: SM_Bld_Shop_06
   m_TagString: Untagged
@@ -425,15 +426,15 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.6
+  - screenRelativeHeight: 0.15
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 2382568}
-  - screenRelativeHeight: 0.3
+  - screenRelativeHeight: 0.1
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 3171830680485324563}
-  - screenRelativeHeight: 0.15
+  - screenRelativeHeight: 0.05
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 6082398091958211220}
@@ -442,6 +443,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 5960193923978858097}
   m_Enabled: 1
+--- !u!114 &-3463345487040051712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 113012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1782888695800840738
 GameObject:
   m_ObjectHideFlags: 0

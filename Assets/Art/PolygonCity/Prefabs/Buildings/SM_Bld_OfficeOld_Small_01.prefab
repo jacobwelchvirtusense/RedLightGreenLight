@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 64023219488911116}
   - component: {fileID: 7944336577528270856}
   - component: {fileID: 9013712326457871235}
+  - component: {fileID: -4781147661632882541}
   m_Layer: 0
   m_Name: SM_Bld_OfficeOld_Small_01
   m_TagString: Untagged
@@ -442,6 +443,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 6160875535836192873}
   m_Enabled: 1
+--- !u!114 &-4781147661632882541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 120682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &118454408240831211
 GameObject:
   m_ObjectHideFlags: 0

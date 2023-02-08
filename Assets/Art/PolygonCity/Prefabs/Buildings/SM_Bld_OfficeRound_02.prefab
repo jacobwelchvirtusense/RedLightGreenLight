@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 64220091701107590}
   - component: {fileID: -3719879214457659782}
   - component: {fileID: 8226041947796587943}
+  - component: {fileID: 9031490324468289450}
   m_Layer: 0
   m_Name: SM_Bld_OfficeRound_02
   m_TagString: Untagged
@@ -119,20 +120,32 @@ MonoBehaviour:
       undoOperations: []
       redoOperations: []
     objectMeshPairs:
-      _Buckets: 00000000ffffffffffffffff
-      _HashCodes: 0c4101000000000000000000
-      _Next: ffffffff0000000000000000
-      _Count: 1
-      _Version: 1
+      _Buckets: ffffffffffffffff020000000300000001000000ffffffffffffffff
+      _HashCodes: 26cc320036cc320050cc320058cc3200000000000000000000000000
+      _Next: ffffffffffffffff00000000ffffffff000000000000000000000000
+      _Count: 4
+      _Version: 4
       _FreeList: -1
       _FreeCount: 0
       _Keys:
       - {fileID: 155662}
+      - {fileID: 2052735498837173664}
+      - {fileID: 7285565276730906443}
+      - {fileID: 8871134567249862230}
+      - {fileID: 0}
       - {fileID: 0}
       - {fileID: 0}
       _Values:
       - attachedToMeshFilter: 1
         mesh: {fileID: 4300000, guid: 6c0954960dd77674fb652e4958628bbf, type: 3}
+      - attachedToMeshFilter: 1
+        mesh: {fileID: 4300000, guid: 5512d4f574b115140b851f1a2193b821, type: 2}
+      - attachedToMeshFilter: 1
+        mesh: {fileID: 4300000, guid: 584638e8313a9e24b8307d2a80a3e4be, type: 2}
+      - attachedToMeshFilter: 1
+        mesh: {fileID: 4300000, guid: 973414c4d9f50f34880b6f6c9710ded1, type: 2}
+      - attachedToMeshFilter: 0
+        mesh: {fileID: 0}
       - attachedToMeshFilter: 0
         mesh: {fileID: 0}
       - attachedToMeshFilter: 0
@@ -372,14 +385,14 @@ MonoBehaviour:
     oldSphereScale: {x: 0, y: 0, z: 0}
     reductionStrength: 0
     reductionPending: 0
-    prevFeasibleTarget: {fileID: 159070, guid: 54c86e934c1824f46a2a8955ea57091b, type: 3}
+    prevFeasibleTarget: {fileID: 155662}
     runOnThreads: 0
     triangleCount: 990
     lastDrawer: {fileID: 0}
     foldoutAutoLOD: 0
     foldoutBatchFew: 0
     foldoutAutoLODMultiple: 0
-    objPositionPrevFrame: {x: 0, y: 0, z: 0}
+    objPositionPrevFrame: {x: -25.5, y: 6, z: 34.5}
     objScalePrevFrame: {x: 1, y: 1, z: 1}
     considerChildrenBatchFew: 1
     autoLODSavePath: 
@@ -410,11 +423,11 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.6
+  - screenRelativeHeight: 0.4
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 2337178}
-  - screenRelativeHeight: 0.4
+  - screenRelativeHeight: 0.2
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 3948390623618652504}
@@ -427,6 +440,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 2043985642455603683}
   m_Enabled: 1
+--- !u!114 &9031490324468289450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 155662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2052735498837173664
 GameObject:
   m_ObjectHideFlags: 0

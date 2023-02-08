@@ -39,11 +39,6 @@ public class EndGameUIHandler : MonoBehaviour
     /// </summary>
     private void Awake()
     {
-        /*
-        endGameMessage = GetComponent<TextMeshProUGUI>();
-        endGameMessage.enabled = true;
-        */
-
         endGameMessage = gameObject;
 
         MetersDisplayed = metersDisplayed;

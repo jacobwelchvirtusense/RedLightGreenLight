@@ -9,6 +9,7 @@
 *********************************/
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CountdownUIHandler : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class CountdownUIHandler : MonoBehaviour
     /// All of the points displays.
     /// </summary>
     private static TextMeshProUGUI countdownText;
+
+    private static Image countdownImage;
     #endregion
 
     #region Functions
@@ -26,6 +29,8 @@ public class CountdownUIHandler : MonoBehaviour
     private void Awake()
     {
         countdownText = GetComponent<TextMeshProUGUI>();
+        countdownImage = GetComponentInChildren<Image>();
+
         UpdateCountdown(0);
     }
 
@@ -41,6 +46,14 @@ public class CountdownUIHandler : MonoBehaviour
         // Updates the countdown UI 
         countdownText.text = currentCount.ToString();
         countdownText.gameObject.SetActive(currentCount != 0);
+    }
+
+    public static void ChangeTransparency()
+    {
+        var color = Color.white;
+        color.a = 0.5f;
+
+        countdownImage.color = color;
     }
     #endregion
 }

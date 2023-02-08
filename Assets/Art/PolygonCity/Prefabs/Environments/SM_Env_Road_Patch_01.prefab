@@ -119,27 +119,27 @@ MonoBehaviour:
       undoOperations: []
       redoOperations: []
     objectMeshPairs:
-      _Buckets: ffffffffffffffff00000000
-      _HashCodes: 2e4e01000000000000000000
+      _Buckets: 00000000ffffffffffffffff
+      _HashCodes: e2cc29000000000000000000
       _Next: ffffffff0000000000000000
       _Count: 1
       _Version: 1
       _FreeList: -1
       _FreeCount: 0
       _Keys:
-      - {fileID: 117160}
+      - {fileID: 0}
       - {fileID: 0}
       - {fileID: 0}
       _Values:
       - attachedToMeshFilter: 1
-        mesh: {fileID: 4300000, guid: 4e878d01561e49e41be1e9bee4545a66, type: 3}
+        mesh: {fileID: 4300000, guid: 7b1d6beb9b2e7d848ac14f6af1ad146d, type: 3}
       - attachedToMeshFilter: 0
         mesh: {fileID: 0}
       - attachedToMeshFilter: 0
         mesh: {fileID: 0}
     currentLodLevelSettings:
     - reductionStrength: 0
-      transitionHeight: 0.3
+      transitionHeight: 0.4
       preserveUVFoldover: 0
       preserveUVSeams: 0
       preserveBorders: 0
@@ -153,12 +153,12 @@ MonoBehaviour:
       simplificationOptionsFoldout: 0
       intensityFoldout: 0
       sphereIntensities: []
-    - reductionStrength: 30
+    - reductionStrength: 20
       transitionHeight: 0.2
-      preserveUVFoldover: 0
-      preserveUVSeams: 0
+      preserveUVFoldover: 1
+      preserveUVSeams: 1
       preserveBorders: 1
-      useEdgeSort: 0
+      useEdgeSort: 1
       recalculateNormals: 1
       aggressiveness: 7
       maxIterations: 100
@@ -168,12 +168,27 @@ MonoBehaviour:
       simplificationOptionsFoldout: 1
       intensityFoldout: 0
       sphereIntensities: []
-    - reductionStrength: 70
-      transitionHeight: 0.02
-      preserveUVFoldover: 0
-      preserveUVSeams: 0
+    - reductionStrength: 40
+      transitionHeight: 0.1
+      preserveUVFoldover: 1
+      preserveUVSeams: 1
       preserveBorders: 1
-      useEdgeSort: 0
+      useEdgeSort: 1
+      recalculateNormals: 1
+      aggressiveness: 7
+      maxIterations: 100
+      regardCurvature: 0
+      regardTolerance: 0
+      combineMeshes: 0
+      simplificationOptionsFoldout: 1
+      intensityFoldout: 0
+      sphereIntensities: []
+    - reductionStrength: 60
+      transitionHeight: 0.02
+      preserveUVFoldover: 1
+      preserveUVSeams: 1
+      preserveBorders: 1
+      useEdgeSort: 1
       recalculateNormals: 1
       aggressiveness: 7
       maxIterations: 100
@@ -186,7 +201,7 @@ MonoBehaviour:
     toleranceSpheres: []
     lodBackup:
       originalRenderers: []
-      lodParentObject: {fileID: 3357162706749668903}
+      lodParentObject: {fileID: 0}
     textureArraysSettings:
       diffuseArraySettings:
         resolution:
@@ -344,9 +359,9 @@ MonoBehaviour:
       choiceCompressionType: 0
     choiceColorSpace: 0
     preserveBorders: 1
-    preserveUVSeams: 0
-    preserveUVFoldover: 0
-    useEdgeSort: 0
+    preserveUVSeams: 1
+    preserveUVFoldover: 1
+    useEdgeSort: 1
     recalculateNormals: 1
     maxIterations: 100
     aggressiveness: 7
@@ -355,17 +370,17 @@ MonoBehaviour:
     isPreservationActive: 0
     sphereDiameter: 0.5
     oldSphereScale: {x: 0, y: 0, z: 0}
-    reductionStrength: 0
-    reductionPending: 0
-    prevFeasibleTarget: {fileID: 117160}
+    reductionStrength: 60
+    reductionPending: 1
+    prevFeasibleTarget: {fileID: 0}
     runOnThreads: 0
-    triangleCount: 64
+    triangleCount: 611
     lastDrawer: {fileID: 0}
-    foldoutAutoLOD: 0
+    foldoutAutoLOD: 1
     foldoutBatchFew: 0
     foldoutAutoLODMultiple: 0
     objPositionPrevFrame: {x: 0, y: 0, z: 0}
-    objScalePrevFrame: {x: 2.1984446, y: 0.2898417, z: 3.477202}
+    objScalePrevFrame: {x: 1, y: 1, z: 1}
     considerChildrenBatchFew: 1
     autoLODSavePath: 
     foldoutAdditionalOpts: 0
@@ -395,11 +410,11 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.3
+  - screenRelativeHeight: 0.15
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 2391836}
-  - screenRelativeHeight: 0.2
+  - screenRelativeHeight: 0.1
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 4657227252659658063}

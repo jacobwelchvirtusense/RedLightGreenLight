@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 64455827509188898}
   - component: {fileID: -1301558829692410134}
   - component: {fileID: 2045767501767442813}
+  - component: {fileID: -5573972355801111507}
   m_Layer: 0
   m_Name: SM_Bld_CityHall_01
   m_TagString: Untagged
@@ -473,6 +474,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 7525048414572571070}
   m_Enabled: 1
+--- !u!114 &-5573972355801111507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 174454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &849289475097934098
 GameObject:
   m_ObjectHideFlags: 0

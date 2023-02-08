@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 64656763743561184}
   - component: {fileID: 921911193650080257}
   - component: {fileID: 8649818481746923035}
+  - component: {fileID: 6869932634376036031}
   m_Layer: 0
   m_Name: SM_Bld_Shop_Cover_03
   m_TagString: Untagged
@@ -457,6 +458,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 8691219052540166741}
   m_Enabled: 1
+--- !u!114 &6869932634376036031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 149886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1734045912720890360
 GameObject:
   m_ObjectHideFlags: 0

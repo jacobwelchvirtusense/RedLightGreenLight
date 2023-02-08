@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 64840535184475436}
   - component: {fileID: 2111033758022463790}
   - component: {fileID: 5663383618996058710}
+  - component: {fileID: 121787980242734739}
   m_Layer: 0
   m_Name: SM_Bld_OfficeRound_01
   m_TagString: Untagged
@@ -427,6 +428,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 3203206285391864997}
   m_Enabled: 1
+--- !u!114 &121787980242734739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 159070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1716076299297082472
 GameObject:
   m_ObjectHideFlags: 0

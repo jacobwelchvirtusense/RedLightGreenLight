@@ -32,7 +32,7 @@ public class MainCameraHandler : MonoBehaviour
     
     private static Transform CameraFollowTarget;
 
-    private const float spinSpeed = 180;
+    private const float spinSpeed = 20;
     #endregion
 
     #region Functions
@@ -89,8 +89,13 @@ public class MainCameraHandler : MonoBehaviour
 
     private static IEnumerator SpinOnWin()
     {
+        var thirdPersonFollow = mainVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
+
         while (true)
         {
+            thirdPersonFollow.CameraDistance = thirdPersonFollow.CameraDistance + Time.deltaTime * 4;
+            thirdPersonFollow.CameraDistance = Mathf.Clamp(thirdPersonFollow.CameraDistance, 0, 5);
+
             CameraFollowTarget.Rotate(new Vector3(0, spinSpeed * Time.deltaTime, 0));
             yield return new WaitForEndOfFrame();
         }

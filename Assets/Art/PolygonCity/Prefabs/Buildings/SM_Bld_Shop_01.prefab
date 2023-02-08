@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 64192648082073864}
   - component: {fileID: -4873214009818041704}
   - component: {fileID: 65381460690146413}
+  - component: {fileID: -3945432726018126769}
   m_Layer: 0
   m_Name: SM_Bld_Shop_01
   m_TagString: Untagged
@@ -447,6 +448,18 @@ LODGroup:
     - renderer: {fileID: 6010438452071332144}
     - renderer: {fileID: 2464271181658575859}
   m_Enabled: 1
+--- !u!114 &-3945432726018126769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &145354
 GameObject:
   m_ObjectHideFlags: 0

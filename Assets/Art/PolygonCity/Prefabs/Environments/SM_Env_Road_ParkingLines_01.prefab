@@ -119,26 +119,26 @@ MonoBehaviour:
       redoOperations: []
     objectMeshPairs:
       _Buckets: 00000000ffffffffffffffff
-      _HashCodes: dca301000000000000000000
+      _HashCodes: e2cc29000000000000000000
       _Next: ffffffff0000000000000000
       _Count: 1
       _Version: 1
       _FreeList: -1
       _FreeCount: 0
       _Keys:
-      - {fileID: 155758}
+      - {fileID: 0}
       - {fileID: 0}
       - {fileID: 0}
       _Values:
       - attachedToMeshFilter: 1
-        mesh: {fileID: 4300000, guid: 437b7657e25fefd41be1a201bdabe4d5, type: 3}
+        mesh: {fileID: 4300000, guid: 7b1d6beb9b2e7d848ac14f6af1ad146d, type: 3}
       - attachedToMeshFilter: 0
         mesh: {fileID: 0}
       - attachedToMeshFilter: 0
         mesh: {fileID: 0}
     currentLodLevelSettings:
     - reductionStrength: 0
-      transitionHeight: 0.2
+      transitionHeight: 0.4
       preserveUVFoldover: 0
       preserveUVSeams: 0
       preserveBorders: 0
@@ -153,8 +153,8 @@ MonoBehaviour:
       intensityFoldout: 0
       sphereIntensities: []
     - reductionStrength: 20
-      transitionHeight: 0.1
-      preserveUVFoldover: 0
+      transitionHeight: 0.2
+      preserveUVFoldover: 1
       preserveUVSeams: 1
       preserveBorders: 1
       useEdgeSort: 1
@@ -167,9 +167,24 @@ MonoBehaviour:
       simplificationOptionsFoldout: 1
       intensityFoldout: 0
       sphereIntensities: []
-    - reductionStrength: 50
+    - reductionStrength: 40
+      transitionHeight: 0.1
+      preserveUVFoldover: 1
+      preserveUVSeams: 1
+      preserveBorders: 1
+      useEdgeSort: 1
+      recalculateNormals: 1
+      aggressiveness: 7
+      maxIterations: 100
+      regardCurvature: 0
+      regardTolerance: 0
+      combineMeshes: 0
+      simplificationOptionsFoldout: 1
+      intensityFoldout: 0
+      sphereIntensities: []
+    - reductionStrength: 60
       transitionHeight: 0.02
-      preserveUVFoldover: 0
+      preserveUVFoldover: 1
       preserveUVSeams: 1
       preserveBorders: 1
       useEdgeSort: 1
@@ -185,12 +200,12 @@ MonoBehaviour:
     toleranceSpheres: []
     lodBackup:
       originalRenderers: []
-      lodParentObject: {fileID: 2110773145304942753}
+      lodParentObject: {fileID: 0}
     textureArraysSettings:
       diffuseArraySettings:
         resolution:
-          width: 32
-          height: 32
+          width: 0
+          height: 0
         filteringMode: 0
         compressionType: 0
         compressionQuality: 0
@@ -344,7 +359,7 @@ MonoBehaviour:
     choiceColorSpace: 0
     preserveBorders: 1
     preserveUVSeams: 1
-    preserveUVFoldover: 0
+    preserveUVFoldover: 1
     useEdgeSort: 1
     recalculateNormals: 1
     maxIterations: 100
@@ -354,14 +369,14 @@ MonoBehaviour:
     isPreservationActive: 0
     sphereDiameter: 0.5
     oldSphereScale: {x: 0, y: 0, z: 0}
-    reductionStrength: 0
-    reductionPending: 0
-    prevFeasibleTarget: {fileID: 155758}
+    reductionStrength: 60
+    reductionPending: 1
+    prevFeasibleTarget: {fileID: 0}
     runOnThreads: 0
-    triangleCount: 14
+    triangleCount: 611
     lastDrawer: {fileID: 0}
-    foldoutAutoLOD: 0
-    foldoutBatchFew: 1
+    foldoutAutoLOD: 1
+    foldoutBatchFew: 0
     foldoutAutoLODMultiple: 0
     objPositionPrevFrame: {x: 0, y: 0, z: 0}
     objScalePrevFrame: {x: 1, y: 1, z: 1}

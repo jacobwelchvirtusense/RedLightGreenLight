@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 64514820466963414}
   - component: {fileID: -8224986843161990452}
   - component: {fileID: 2359938584242108564}
+  - component: {fileID: 2263740711709422119}
   m_Layer: 0
   m_Name: SM_Bld_Apartment_Stack_03
   m_TagString: Untagged
@@ -427,6 +428,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 514378505614368264}
   m_Enabled: 1
+--- !u!114 &2263740711709422119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 182348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4518707559750373154
 GameObject:
   m_ObjectHideFlags: 0

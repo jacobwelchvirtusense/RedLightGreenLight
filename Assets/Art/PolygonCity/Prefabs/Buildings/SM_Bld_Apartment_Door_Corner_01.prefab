@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 64387176975575516}
   - component: {fileID: -4754171981008003225}
   - component: {fileID: 4065379939258480202}
+  - component: {fileID: 6699768615848278417}
   m_Layer: 0
   m_Name: SM_Bld_Apartment_Door_Corner_01
   m_TagString: Untagged
@@ -425,11 +426,11 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.4
+  - screenRelativeHeight: 0.2
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 2392796}
-  - screenRelativeHeight: 0.2
+  - screenRelativeHeight: 0.1
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 8851194757093126021}
@@ -438,6 +439,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 2085546488802493854}
   m_Enabled: 1
+--- !u!114 &6699768615848278417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 160420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &929701288646747230
 GameObject:
   m_ObjectHideFlags: 0

@@ -218,22 +218,34 @@ MonoBehaviour:
       undoOperations: []
       redoOperations: []
     objectMeshPairs:
-      _Buckets: 0000000001000000ffffffff
-      _HashCodes: e4390300e239030000000000
-      _Next: ffffffffffffffff00000000
-      _Count: 2
-      _Version: 2
+      _Buckets: ffffffff02000000ffffffff0300000001000000ffffffff05000000
+      _HashCodes: d0223000ce223000fc2230000c23300008233000de22300000000000
+      _Next: ffffffffffffffffffffffffffffffff000000000400000000000000
+      _Count: 6
+      _Version: 6
       _FreeList: -1
       _FreeCount: 0
       _Keys:
       - {fileID: 185420}
       - {fileID: 144846}
+      - {fileID: 4780887118597693423}
+      - {fileID: 8638833744824412755}
+      - {fileID: 8431108067519317388}
+      - {fileID: 52902095459794812}
       - {fileID: 0}
       _Values:
       - attachedToMeshFilter: 1
         mesh: {fileID: 4300000, guid: cb3684e034b0818468149778f9f61d12, type: 3}
       - attachedToMeshFilter: 1
         mesh: {fileID: 4300002, guid: cb3684e034b0818468149778f9f61d12, type: 3}
+      - attachedToMeshFilter: 1
+        mesh: {fileID: 4300000, guid: e19f8df336ae2e147a7ef3edb137be54, type: 2}
+      - attachedToMeshFilter: 1
+        mesh: {fileID: 4300000, guid: 2110dce4c10005b40aea9ef9e876b9a8, type: 2}
+      - attachedToMeshFilter: 1
+        mesh: {fileID: 4300000, guid: 0a5bd9fc11540fe4bbe37ae673d7eeff, type: 2}
+      - attachedToMeshFilter: 1
+        mesh: {fileID: 4300000, guid: 54ca2718bd093be4197556826fbea406, type: 2}
       - attachedToMeshFilter: 0
         mesh: {fileID: 0}
     currentLodLevelSettings:
@@ -457,13 +469,13 @@ MonoBehaviour:
     reductionStrength: 0
     reductionPending: 0
     prevFeasibleTarget: {fileID: 185420}
-    runOnThreads: 0
-    triangleCount: 1033
+    runOnThreads: 1
+    triangleCount: 4613
     lastDrawer: {fileID: 0}
     foldoutAutoLOD: 0
     foldoutBatchFew: 0
     foldoutAutoLODMultiple: 0
-    objPositionPrevFrame: {x: 0, y: 0, z: 0}
+    objPositionPrevFrame: {x: -25.5, y: 0, z: 34.5}
     objScalePrevFrame: {x: 1, y: 1, z: 1}
     considerChildrenBatchFew: 1
     autoLODSavePath: 

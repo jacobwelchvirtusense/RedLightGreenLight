@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 64943744163857638}
   - component: {fileID: -6244684281015339406}
   - component: {fileID: 5979886241298665683}
+  - component: {fileID: -3589577799463252758}
   m_Layer: 0
   m_Name: SM_Bld_Apartment_Corner_03
   m_TagString: Untagged
@@ -134,24 +135,24 @@ MonoBehaviour:
       undoOperations: []
       redoOperations: []
     objectMeshPairs:
-      _Buckets: 00000000ffffffffffffffff
-      _HashCodes: 1c8e01000000000000000000
-      _Next: ffffffff0000000000000000
-      _Count: 1
-      _Version: 1
+      _Buckets: 000000000200000001000000
+      _HashCodes: 4e5d5400685d5400705d5400
+      _Next: ffffffffffffffffffffffff
+      _Count: 3
+      _Version: 3
       _FreeList: -1
       _FreeCount: 0
       _Keys:
       - {fileID: 189184}
-      - {fileID: 0}
-      - {fileID: 0}
+      - {fileID: 2090975406957396876}
+      - {fileID: 3533901617041799401}
       _Values:
       - attachedToMeshFilter: 1
         mesh: {fileID: 4300000, guid: 215c55a401db928499ce6ba99a369d07, type: 3}
-      - attachedToMeshFilter: 0
-        mesh: {fileID: 0}
-      - attachedToMeshFilter: 0
-        mesh: {fileID: 0}
+      - attachedToMeshFilter: 1
+        mesh: {fileID: 4300000, guid: 9193d67b900ea5b4083962ba992b79b0, type: 2}
+      - attachedToMeshFilter: 1
+        mesh: {fileID: 4300000, guid: c6c0cf9348c5e964f9ff39ce46884767, type: 2}
     currentLodLevelSettings:
     - reductionStrength: 0
       transitionHeight: 0.4
@@ -379,8 +380,8 @@ MonoBehaviour:
     foldoutAutoLOD: 0
     foldoutBatchFew: 0
     foldoutAutoLODMultiple: 0
-    objPositionPrevFrame: {x: 0, y: 0, z: 0}
-    objScalePrevFrame: {x: 1, y: 1, z: 1}
+    objPositionPrevFrame: {x: -10, y: 6, z: -65}
+    objScalePrevFrame: {x: 1.0000002, y: 1, z: 1.0000002}
     considerChildrenBatchFew: 1
     autoLODSavePath: 
     foldoutAdditionalOpts: 0
@@ -410,11 +411,11 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.4
+  - screenRelativeHeight: 0.2
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 2322114}
-  - screenRelativeHeight: 0.2
+  - screenRelativeHeight: 0.1
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 631673736515615230}
@@ -423,6 +424,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 2687349495924689052}
   m_Enabled: 1
+--- !u!114 &-3589577799463252758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 189184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1652598081273443279
 GameObject:
   m_ObjectHideFlags: 0

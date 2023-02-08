@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 64585447730988126}
   - component: {fileID: 1037296732742478175}
   - component: {fileID: 6931816727410804506}
+  - component: {fileID: 5285873791282473261}
   m_Layer: 0
   m_Name: SM_Bld_OfficeOld_Large_Roof_01
   m_TagString: Untagged
@@ -442,6 +443,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 5697911806255719414}
   m_Enabled: 1
+--- !u!114 &5285873791282473261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &994150696049040987
 GameObject:
   m_ObjectHideFlags: 0

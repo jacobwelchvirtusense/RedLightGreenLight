@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 64465966727508294}
   - component: {fileID: 6529995461686528877}
   - component: {fileID: 4621728669223846139}
+  - component: {fileID: 516574358656126024}
   m_Layer: 0
   m_Name: SM_Bld_FireEscape_03
   m_TagString: Untagged
@@ -502,6 +503,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 6336845983750202787}
   m_Enabled: 1
+--- !u!114 &516574358656126024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 186654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2902623001139910413
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 64394111778823318}
   - component: {fileID: 6761875984129938177}
   - component: {fileID: 8476145050496205536}
+  - component: {fileID: -7399003548155367563}
   m_Layer: 0
   m_Name: SM_Bld_OfficeOctagon_01
   m_TagString: Untagged
@@ -408,6 +409,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 3946071002561260173}
   m_Enabled: 1
+--- !u!114 &-7399003548155367563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 116864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1823392633390861808
 GameObject:
   m_ObjectHideFlags: 0

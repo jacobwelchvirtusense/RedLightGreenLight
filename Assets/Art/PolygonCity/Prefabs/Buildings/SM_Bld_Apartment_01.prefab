@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 64925656970162654}
   - component: {fileID: -847472503841492389}
   - component: {fileID: 7084955247791332795}
+  - component: {fileID: 7905178525343517456}
   m_Layer: 0
   m_Name: SM_Bld_Apartment_01
   m_TagString: Untagged
@@ -395,11 +396,11 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.4
+  - screenRelativeHeight: 0.2
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 2344520}
-  - screenRelativeHeight: 0.2
+  - screenRelativeHeight: 0.1
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1445066200025493302}
@@ -408,6 +409,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 6563018235292242734}
   m_Enabled: 1
+--- !u!114 &7905178525343517456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 165386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1027198906527953113
 GameObject:
   m_ObjectHideFlags: 0

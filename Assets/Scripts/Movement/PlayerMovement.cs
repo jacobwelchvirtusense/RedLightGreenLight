@@ -99,13 +99,22 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("The max size of frames to check for wobble")]
     [SerializeField] private int wobbleCheckSize = 5;
 
+    public enum MovementThresholdDifficulty { EASY, MEDIUM, HARD }
+
+    [Tooltip("The current threshold difficulty for the player's movements")]
+    [field:SerializeField] public MovementThresholdDifficulty CurrentMovementDifficulty { get; private set; } = MovementThresholdDifficulty.MEDIUM;
+
     [Range(0.0f, 10.0f)]
     [Tooltip("The minimum height a patients foot must be raised by")]
-    [SerializeField] private float minUpHeightKnee = 0.1f;
+    [SerializeField] private float[] minUpHeightKnee = new float[] { 0.025f, 0.035f, 0.045f };
+
+    private float MinUpHeightKnee { get => minUpHeightKnee[(int)CurrentMovementDifficulty]; }
 
     [Range(0.0f, 10.0f)]
     [Tooltip("The maximum height a patients foot may be raised by (limits movementspeed")]
-    [SerializeField] private float maxUpHeightKnee = 0.4f;
+    [SerializeField] private float[] maxUpHeightKnee = new float[] { 0.08f, 0.09f, 0.1f };
+
+    private float MaxUpHeightKnee { get => maxUpHeightKnee[(int)CurrentMovementDifficulty]; }
 
     [Range(0.0f, 10.0f)]
     [Tooltip("The minimum height a patients foot must be raised by")]
@@ -131,39 +140,48 @@ public class PlayerMovement : MonoBehaviour
 
     [Range(0.0f, 2.0f)]
     [Tooltip("The input delay between acceptable inputs")]
+    [SerializeField] private float minStationarySpeed = 0.5f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The input delay between acceptable inputs")]
+    [SerializeField] private float maxStationarySpeed = 1.5f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The input delay between acceptable inputs")]
+    [SerializeField] private float minSpeedAverageTimeBetween = 0.6f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The input delay between acceptable inputs")]
+    [SerializeField] private float maxSpeedAverageTimeBetween = 0.2f;
+
+    [Space(InspectorValues.SPACE_BETWEEN_EDITOR_ELEMENTS)]
+
+    // Probably To Delete TODO
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The input delay between acceptable inputs")]
     [SerializeField] private float jointInputDelay = 0.15f;
 
     [Range(0.0f, 2.0f)]
     [Tooltip("How long each speed increment is held for")]
     [SerializeField] private float inputSpeedHoldTime = 0.5f;
 
-    [Range(0.0f, 2.0f)]
-    [Tooltip("The increment for each input")]
-    [SerializeField] private float inputSpeedIncrement = 0.3f;
-
-    [Range(0.0f, 2.0f)]
-    [Tooltip("The increment for each input")]
-    [SerializeField] private float speedIncrementEaseInTime = 0.3f;
-
-    [Range(0.0f, 2.0f)]
-    [Tooltip("The increment for each input")]
-    [SerializeField] private float speedIncrementEaseOutTime = 0.3f;
-
-    [Range(0.0f, 5.0f)]
-    [Tooltip("The max speed modifier the user can reach")]
-    [SerializeField] private float maxStationarySpeedModifier = 2.0f;
-
     /// <summary>
     /// The current speed modifier for the player.
     /// </summary>
     private float stationarySpeedModifier = 0.0f;
 
-    private float StationarySpeedModifier { get => Mathf.Clamp(stationarySpeedModifier, 0.0f, maxStationarySpeedModifier); }
+    private float StationarySpeedModifier { get => Mathf.Clamp(stationarySpeedModifier, 0.0f, maxStationarySpeed); }
 
     /// <summary>
     /// Holds reference to the y positions of players feet.
     /// </summary>
     private Dictionary<JointType, Queue<Vector3>> footTracking = new Dictionary<JointType, Queue<Vector3>>();
+
+    /// <summary>
+    /// Holds reference to the y positions of players feet.
+    /// </summary>
+    private Queue<float> inputTimes = new Queue<float>();
 
     /// <summary>
     /// Holds reference to the y positions of players feet.
@@ -492,6 +510,8 @@ public class PlayerMovement : MonoBehaviour
         pos.z = (startingSensorDistance - distance) * playerSize + startingRaceZ;
 
         transform.position = pos;
+
+        print("Set Z");
     }
 
     #region Movement Animations
@@ -601,15 +621,15 @@ public class PlayerMovement : MonoBehaviour
                     {
                         var distUp = maxZ - sourceJoint.Position.Z;
 
-                        if (distUp > minUpHeightKnee)
+                        if (distUp > MinUpHeightKnee)
                         {
                             if (footAcceptingInputs[joint])
                             {
                                 StartCoroutine(DelayFootInputStationary(joint));
-                                StartCoroutine(HoldStationaryModScore());
+                                StartCoroutine(HoldInput());
                             }
 
-                            var newHeight = Mathf.Clamp(distUp, minUpHeightKnee, maxUpHeightKnee);
+                            var newHeight = Mathf.Clamp(distUp, MinUpHeightKnee, MaxUpHeightKnee);
                             CheckStateStationary(newHeight);
                         }
                     }
@@ -651,34 +671,11 @@ public class PlayerMovement : MonoBehaviour
         stationarySpeedModifier = Mathf.Clamp(stationarySpeedModifier, 0.0f, Mathf.Infinity);
     }
 
-    private IEnumerator HoldStationaryModScore()
+    private IEnumerator HoldInput()
     {
-        StartCoroutine(ModScoreEaseLoop(1, speedIncrementEaseInTime));
-
+        inputTimes.Enqueue(Time.time);
         yield return new WaitForSeconds(inputSpeedHoldTime);
-
-        StartCoroutine(ModScoreEaseLoop(-1, speedIncrementEaseOutTime));
-    }
-
-    private IEnumerator ModScoreEaseLoop(int incrementDirection, float easeTime)
-    {
-        var t = easeTime;
-        var totalChanged = 0.0f;
-
-        while (t > 0.0f)
-        {
-            var toAdd = inputSpeedIncrement * incrementDirection * Time.fixedDeltaTime / easeTime;
-            t -= Time.fixedDeltaTime;
-            totalChanged += toAdd;
-
-            UpdateStationaryModifier(toAdd);
-            yield return new WaitForFixedUpdate();
-        }
-
-        print("total changed: " + totalChanged);
-        print("Adjustment: " + (inputSpeedIncrement - totalChanged * incrementDirection));
-
-        UpdateStationaryModifier((inputSpeedIncrement - totalChanged*incrementDirection)*incrementDirection);
+        inputTimes.Dequeue();
     }
     #endregion
 
@@ -703,7 +700,7 @@ public class PlayerMovement : MonoBehaviour
                 break;
 
             case LightState.GREEN:
-                var inverseLerp = isKnee ? Mathf.InverseLerp(minUpHeightKnee, maxUpHeightKnee, heightReached) : Mathf.InverseLerp(minUpHeightFoot, maxUpHeightFoot, heightReached);
+                var inverseLerp = isKnee ? Mathf.InverseLerp(MinUpHeightKnee, MaxUpHeightKnee, heightReached) : Mathf.InverseLerp(minUpHeightFoot, maxUpHeightFoot, heightReached);
                 var time = Mathf.Lerp(minMovementTime, maxMovementTime, inverseLerp);
 
                 if (currentMovementDuration == 0)
@@ -747,7 +744,9 @@ public class PlayerMovement : MonoBehaviour
     {
         var modifier = currentMovementDuration != 0 ? 1 : 0;
 
-        //stationarySpeedModifier = 1;
+        stationarySpeedModifier = 1;
+        stationarySpeedModifier = CalculateSpeedModifier();
+        //print("Stationary Speed Modifier: " + stationarySpeedModifier);
         currentMovementSpeed = Mathf.Lerp(currentMovementSpeed, movementSpeedStationary * StationarySpeedModifier * modifier, Time.fixedDeltaTime*movementSmoothTime);
 
         //currentMovementSpeed += Time.fixedDeltaTime / movementSmoothTime * modifier * stationarySpeedModifier;
@@ -760,12 +759,52 @@ public class PlayerMovement : MonoBehaviour
 
         if (isWalking)
         {
-            if(gameController.lightState == LightState.GREEN) gameController.UpdatePoints(0, StationarySpeedModifier);
+            if(gameController.lightState == LightState.GREEN || gameController.lightState == LightState.YELLOW) gameController.UpdatePoints(0, StationarySpeedModifier);
 
             transform.position += transform.forward * Time.fixedDeltaTime * currentMovementSpeed;
         }
     }
+
+    private float CalculateSpeedModifier()
+    {
+        if (inputTimes.Count == 0) return 0;
+        else if (inputTimes.Count == 1) return minStationarySpeed;
+        else
+        {
+            List<float> timeBetween = new List<float>();
+            var inputTimesList = inputTimes.ToList();
+
+            for (int i = 0; i < inputTimes.Count-1; i++)
+            {
+                timeBetween.Add(Mathf.Abs(inputTimesList[i]-inputTimesList[i+1]));
+            }
+
+            print("Average: " + timeBetween.Average());
+            print("Count: " + timeBetween.Count);
+
+            var inverseLerp = Mathf.InverseLerp(minSpeedAverageTimeBetween, maxSpeedAverageTimeBetween, timeBetween.Average());
+
+            print("Inverse: " + inverseLerp);
+
+            return Mathf.Lerp(minStationarySpeed, maxStationarySpeed, inverseLerp);
+        }
+    }
     #endregion
+    #endregion
+
+    #region Win Event
+    public void PlayWinAnimation()
+    {
+        if(transform.position.z < -30)
+        {
+            var zPos = transform.position;
+            zPos.z += 229.8f;
+            transform.position = zPos;
+        }
+
+        playerAnimator.SetInteger("Dance Number", UnityEngine.Random.Range(0, 5));
+        playerAnimator.SetBool(winID, true);
+    }
     #endregion
 
     #region Fail Event

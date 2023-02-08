@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 65855074291239870}
   - component: {fileID: -2646228795817786735}
   - component: {fileID: 1090803068912615073}
+  - component: {fileID: 3367709661642759486}
   m_Layer: 0
   m_Name: SM_Bld_Apartment_Roof_01
   m_TagString: Untagged
@@ -407,6 +408,18 @@ LODGroup:
     renderers:
     - renderer: {fileID: 2121549458769541723}
   m_Enabled: 1
+--- !u!114 &3367709661642759486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 134626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d83de7f3cb6a4243ae4dac52f00104f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1017122738689064402
 GameObject:
   m_ObjectHideFlags: 0

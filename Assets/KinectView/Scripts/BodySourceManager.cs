@@ -32,7 +32,29 @@ public class BodySourceManager : MonoBehaviour
         }
     }
 
-    void Update()
+    private void FixedUpdate()
+    {
+        if (_Reader != null)
+        {
+            var frame = _Reader.AcquireLatestFrame();
+            if (frame != null)
+            {
+                floor = frame.FloorClipPlane;
+
+                if (_Data == null)
+                {
+                    _Data = new Body[_Sensor.BodyFrameSource.BodyCount];
+                }
+
+                frame.GetAndRefreshBodyData(_Data);
+
+                frame.Dispose();
+                frame = null;
+            }
+        }
+    }
+
+    private void Update()
     {
         if (_Reader != null)
         {

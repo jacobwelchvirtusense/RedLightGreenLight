@@ -75,7 +75,7 @@ public class GameController : MonoBehaviour
     /// <summary>
     /// States for the light, yellow means inactive.
     /// </summary>
-    public enum LightState { RED, GREEN, OFF };
+    public enum LightState { RED, GREEN, OFF, YELLOW };
 
     /// <summary>
     /// The current light state for the light.
@@ -347,6 +347,16 @@ public class GameController : MonoBehaviour
 
             t -= 1;
             GameTimerUIHandler.UpdateTimer(t);
+
+            if (t == 3)
+            {
+                CountdownUIHandler.ChangeTransparency();
+                CountdownUIHandler.UpdateCountdown(timeBeforeStart);
+            }
+            else if(t == 0)
+            {
+                CountdownUIHandler.UpdateCountdown(0);
+            }
         }
         #endregion
 
@@ -506,7 +516,7 @@ public class GameController : MonoBehaviour
         PlaySound(redLightSound, redLightSoundVolume);
         StartCoroutine(RedLightDetectionDelay());
 
-        UpdateActiveLights(LightState.RED);
+        UpdateActiveLights(LightState.YELLOW);
     }
 
     /// <summary>
@@ -519,6 +529,7 @@ public class GameController : MonoBehaviour
 
         yield return new WaitForSeconds(timeBeforeMovementDetection[(int)CurrentMovementTrackingMethod]);
 
+        if(lightState != LightState.OFF) UpdateActiveLights(LightState.RED);
         canDetectPenaltyMovement = true;
     }
 
@@ -541,8 +552,13 @@ public class GameController : MonoBehaviour
     /// <returns></returns>
     public IEnumerator EndGame()
     {
-        yield return new WaitForEndOfFrame();
+        FindObjectOfType<PlayerMovement>().PlayWinAnimation();
+        MainCameraHandler.AnimateCamera("Win");
         GoToOffLight();
+        GameOverTextHandler.ShowText();
+
+        yield return new WaitForSeconds(5.0f);
+
         EndGameUIHandler.EnableText(true);
         OutputData();
     }
