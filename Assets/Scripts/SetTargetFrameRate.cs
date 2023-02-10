@@ -5,7 +5,7 @@
  * Project: Apple Basket
  * Creation Date: 2/1/2023 8:22:57 AM
  * 
- * Description: TODO
+ * Description: Limits the frame rate of the end user.
 *********************************/
 using System.Collections;
 using System.Collections.Generic;
