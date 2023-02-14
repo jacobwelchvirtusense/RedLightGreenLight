@@ -34,6 +34,8 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private const float playerSize = 10.0f;
 
+    private static PlayerMovement instance;
+
     #region Speed
     [Header("Speed")]
     [Range(0.0f, 20.0f)]
@@ -251,6 +253,7 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         startingRaceZ = transform.position.z;
+        instance = this;
 
         InitializeComponents();
         InitializeDictionaries();
@@ -292,6 +295,11 @@ public class PlayerMovement : MonoBehaviour
         breatheID = Animator.StringToHash(breatheAnimationTag);
     }
     #endregion
+
+    public static void UpdateMovementDifficulty(int newIndex)
+    {
+        instance.CurrentMovementDifficulty = (MovementThresholdDifficulty)newIndex;
+    }
 
     #region Input Handling
     /// <summary>

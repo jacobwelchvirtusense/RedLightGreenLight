@@ -29,7 +29,7 @@ public class EndGameDataDisplay : MonoBehaviour
     private void Awake()
     {
         textMeshProUGUI = GetComponent<TextMeshProUGUI>();
-        startingText = textMeshProUGUI.text;
+        //startingText = textMeshProUGUI.text;
     }
 
     public void UpdateText(string displayText)

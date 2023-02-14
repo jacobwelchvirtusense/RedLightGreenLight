@@ -22,13 +22,13 @@ public class EndGameUIHandler : MonoBehaviour
 
     [SerializeField] private EndGameDataDisplay metersDisplayed;
     [SerializeField] private EndGameDataDisplay timeSpent;
-    [SerializeField] private EndGameDataDisplay fastestSpeed;
+    [SerializeField] private EndGameDataDisplay averageSpeed;
     [SerializeField] private EndGameDataDisplay redLightsFailed;
     [SerializeField] private EndGameDataDisplay metersLost;
 
     private static EndGameDataDisplay MetersDisplayed;
     private static EndGameDataDisplay TimeSpent;
-    private static EndGameDataDisplay FastestSpeed;
+    private static EndGameDataDisplay AverageSpeed;
     private static EndGameDataDisplay RedLightsFailed;
     private static EndGameDataDisplay MetersLost;
     #endregion
@@ -43,7 +43,7 @@ public class EndGameUIHandler : MonoBehaviour
 
         MetersDisplayed = metersDisplayed;
         TimeSpent = timeSpent;
-        FastestSpeed = fastestSpeed;
+        AverageSpeed = averageSpeed;
         RedLightsFailed = redLightsFailed;
         MetersLost = metersLost;
 
@@ -61,11 +61,11 @@ public class EndGameUIHandler : MonoBehaviour
         endGameMessage.SetActive(shouldEnable);
     }
 
-    public static void UpdateEndGameData(int metersTraveled, int timeSpent, float fastestSpeed, int redLightsFailed, int metersLost)
+    public static void UpdateEndGameData(int metersTraveled, int timeSpent, float averageSpeed, int redLightsFailed, int metersLost)
     {
         MetersDisplayed.UpdateText(metersTraveled.ToString() + "m");
         TimeSpent.UpdateText(GameTimerUIHandler.TimeToString(timeSpent));
-        FastestSpeed.UpdateText(fastestSpeed.ToString() + "m/s");
+        AverageSpeed.UpdateText(averageSpeed.ToString() + "m/s");
         RedLightsFailed.UpdateText(redLightsFailed.ToString());
         MetersLost.UpdateText(metersLost.ToString() + "m");
     }

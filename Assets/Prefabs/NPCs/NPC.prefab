@@ -7765,7 +7765,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 18
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4529056759980453342
 Transform:
   m_ObjectHideFlags: 0
@@ -7902,8 +7902,8 @@ MonoBehaviour:
       undoOperations: []
       redoOperations: []
     objectMeshPairs:
-      _Buckets: 01000000ffffffffffffffff03000000ffffffff04000000ffffffff
-      _HashCodes: 7a060900ba0509009c050900680709005c0709000000000000000000
+      _Buckets: 04000000ffffffff01000000ffffffffffffffff03000000ffffffff
+      _HashCodes: d866a3001866a300fa65a300c667a300ba67a3000000000000000000
       _Next: ffffffffffffffffffffffff00000000020000000000000000000000
       _Count: 5
       _Version: 5

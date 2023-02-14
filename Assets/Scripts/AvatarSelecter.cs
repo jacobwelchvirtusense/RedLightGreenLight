@@ -31,6 +31,11 @@ public class AvatarSelecter : MonoBehaviour
 
     public void InitializeAvatar()
     {
+        foreach(GameObject character in characterParents)
+        {
+            character.SetActive(false);
+        }
+
         var charParent = characterParents[Random.Range(0, characterParents.Length)];
         charParent.SetActive(true);
 

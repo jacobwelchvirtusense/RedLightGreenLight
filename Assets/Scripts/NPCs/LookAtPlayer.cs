@@ -26,12 +26,19 @@ public class LookAtPlayer : MonoBehaviour
     private void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        RotateLookAtPlayer();
     }
 
+    /*
     /// <summary>
     /// Rotates this objects in the z axis to always look at the player.
     /// </summary>
     private void FixedUpdate()
+    {
+        RotateLookAtPlayer();
+    }*/
+
+    private void RotateLookAtPlayer()
     {
         transform.LookAt(player.position);
         transform.rotation = Quaternion.Euler(new Vector3(0, transform.rotation.eulerAngles.y, 0));

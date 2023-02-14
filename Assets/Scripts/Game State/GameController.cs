@@ -31,6 +31,14 @@ public class GameController : MonoBehaviour
 
     #region Timer
     [Header("Timer")]
+    private int[] timers = new int[] { 60, 120, 180, 240, 300 };
+
+    /// <summary>
+    /// The index for the timer to be used.
+    /// </summary>
+    private int timerIndex = 0;
+
+    /*
     [Range(0, 300)]
     [Tooltip("The minimum value for the timer in seconds")]
     [SerializeField] private int minTimerAmount = 30;
@@ -41,7 +49,7 @@ public class GameController : MonoBehaviour
 
     [Range(0.0f, 1.0f)]
     [Tooltip("The current lerp between the min and max timer amounts")]
-    [SerializeField] private float currentTimer = 0.5f;
+    [SerializeField] private float currentTimer = 0.5f;*/
     #endregion
 
     #region Red Light Green Light
@@ -243,12 +251,8 @@ public class GameController : MonoBehaviour
     {
         InitializeComponents();
 
-        StartCoroutine(CountdownLoop());
         var args = System.Environment.GetCommandLineArgs();
         Application.runInBackground = true;
-
-
-
 
         string pipeName = null;
 
@@ -266,9 +270,6 @@ public class GameController : MonoBehaviour
            
         }
         
-
-
-
         if (pipeName != null)
         {
             pipe = new Subprocess(pipeName);
@@ -277,12 +278,11 @@ public class GameController : MonoBehaviour
             var msg = pipe.DequeueMessage();
             
         }
-
     }
 
     private void Start()
     {
-        int t = Mathf.RoundToInt(Mathf.Lerp(minTimerAmount, maxTimerAmount, currentTimer));
+        int t = GetTimer();
         GameTimerUIHandler.UpdateTimer(t);  // Initializes the countdown
     }
 
@@ -297,6 +297,11 @@ public class GameController : MonoBehaviour
     #endregion
 
     #region Countdown
+    public static void StartCountdown()
+    {
+        gameController.StartCoroutine(gameController.CountdownLoop());
+    }
+
     /// <summary>
     /// Counts down before starting the game again.
     /// </summary>
@@ -306,8 +311,6 @@ public class GameController : MonoBehaviour
         // Sets the initial state
         GoToOffLight();
         int t = timeBeforeStart;
-
-        yield return new WaitForSeconds(1);
 
         CountdownUIHandler.UpdateCountdown(timeBeforeStart);
 
@@ -331,13 +334,19 @@ public class GameController : MonoBehaviour
     #endregion
 
     #region Timer
+    public static void UpdateTimer(int newIndex)
+    {
+        gameController.timerIndex = newIndex;
+        GameTimerUIHandler.UpdateTimer(gameController.GetTimer());  // Initializes the countdown
+    }
+
     /// <summary>
     /// A timer that controls how long the game session will be.
     /// </summary>
     /// <returns></returns>
     private IEnumerator GameTimer()
     {
-        int t = Mathf.RoundToInt(Mathf.Lerp(minTimerAmount, maxTimerAmount, currentTimer));
+        int t = GetTimer();
         GameTimerUIHandler.UpdateTimer(t);  // Initializes the countdown
 
         #region Countdown Update
@@ -361,6 +370,11 @@ public class GameController : MonoBehaviour
         #endregion
 
         StartCoroutine(EndGame());
+    }
+
+    private int GetTimer()
+    {
+        return timers[timerIndex];
     }
     #endregion
 
@@ -579,11 +593,13 @@ public class GameController : MonoBehaviour
                 break;
             default:
             case GameMode.STATIONARY:
-                var duration = Mathf.RoundToInt(Mathf.Lerp(minTimerAmount, maxTimerAmount, currentTimer));
+                var duration = GetTimer();
                 var meters = PointUIHandler.PointsToMeters();
+                var speed = meters / (float)duration;
+                var metersLost = (int)((penaltyPoints / 100.0f) * failedRedLights);
                 print("Duration: " + duration);
 
-                EndGameUIHandler.UpdateEndGameData(meters, duration, meters/(float)duration, failedRedLights, (int)((penaltyPoints/100.0f)*failedRedLights));
+                EndGameUIHandler.UpdateEndGameData(meters, duration, Mathf.Round(speed * 100f) / 100f, failedRedLights, metersLost);
                 break;
         }
     }
