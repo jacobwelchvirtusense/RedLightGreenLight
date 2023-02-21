@@ -141,9 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6252327a7e8a054ebe52f4251c53bf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minTimerAmount: 60
-  maxTimerAmount: 120
-  currentTimer: 0
+  timers: 3c00000078000000b4000000f00000002c010000
   disableRed: 0
   canDetectPenaltyMovement: 0
   lightState: 2
@@ -151,15 +149,14 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   randomNumberMethod: 1
-  timeBeforeStart: 3
   timeBeforeMovementDetection:
   - 1
-  - 0.7
-  - 0.5
+  - 1
+  - 1
   penaltyDuration: 1.3
   minTimeBeforeRed: 3.5
   maxTimeBeforeRed: 5.5
-  minTimeBeforeGreen: 2
+  minTimeBeforeGreen: 3
   maxTimeBeforeGreen: 3
   cameraShakeAmplitude: 1.5
   cameraShakeFrequency: 1.5
@@ -173,4 +170,4 @@ MonoBehaviour:
   failSound: {fileID: 8300000, guid: f2d191b0cd672964cba3b1d67afea3d9, type: 3}
   failSoundVolume: 1
   pointsPerMovement: 10
-  penaltyPoints: 3000
+  penaltyPoints: 1500
