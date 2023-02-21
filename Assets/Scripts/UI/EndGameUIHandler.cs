@@ -48,6 +48,13 @@ public class EndGameUIHandler : MonoBehaviour
         MetersLost = metersLost;
 
         gameObject.SetActive(false);
+
+        GameController.ResetGameEvent.AddListener(ResetEndGameUI);
+    }
+
+    private void ResetEndGameUI()
+    {
+        gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -61,6 +68,14 @@ public class EndGameUIHandler : MonoBehaviour
         endGameMessage.SetActive(shouldEnable);
     }
 
+    /// <summary>
+    /// Updates the data being displayed in the end screen.
+    /// </summary>
+    /// <param name="metersTraveled">The meters that the user traveled</param>
+    /// <param name="timeSpent">The time the user spent in the game</param>
+    /// <param name="averageSpeed">The average speed of the user</param>
+    /// <param name="redLightsFailed">The amount of red lights that the user has failed</param>
+    /// <param name="metersLost">The amount of meters lost from failing red lights.</param>
     public static void UpdateEndGameData(int metersTraveled, int timeSpent, float averageSpeed, int redLightsFailed, int metersLost)
     {
         MetersDisplayed.UpdateText(metersTraveled.ToString() + "m");

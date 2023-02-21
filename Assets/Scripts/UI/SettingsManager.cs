@@ -80,6 +80,7 @@ public class SettingsManager : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         settingsSlots = GetComponentsInChildren<SettingsSlot>();
         settingsSlots[0].SetHover(true);
+        GameController.ResetGameEvent.AddListener(ResetSettingsMenu);
 
         InitializeSettings();
     }
@@ -93,6 +94,16 @@ public class SettingsManager : MonoBehaviour
         RefreshMovementDifficulty();
         RefreshInputType();
         RefreshAudio();
+    }
+
+    private void ResetSettingsMenu()
+    {
+        gameObject.SetActive(true);
+        settingsSlots[currentSettingsSlot].SetHover(false);
+        currentSettingsSlot = 0;
+        settingsSlots[currentSettingsSlot].SetHover(true);
+
+        InitializeSettings();
     }
     #endregion
 
@@ -207,7 +218,6 @@ public class SettingsManager : MonoBehaviour
     private void RefreshInputType()
     {
         redLightDelaySlot.SetCurrentSlotIndex(inputType);
-        //BasketMovement.SetMovementType(inputType);
     }
     #endregion
 

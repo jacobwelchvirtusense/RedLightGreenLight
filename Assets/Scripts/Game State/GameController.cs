@@ -18,6 +18,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 
 using Assets.Scripts;
+using System.Threading;
 
 [RequireComponent(typeof(AudioSource))]
 public class GameController : MonoBehaviour
@@ -29,27 +30,17 @@ public class GameController : MonoBehaviour
     public static GameController gameController { get; private set; }
     Subprocess pipe;
 
+    public static UnityEvent ResetGameEvent = new UnityEvent();
+
     #region Timer
     [Header("Timer")]
-    private int[] timers = new int[] { 60, 120, 180, 240, 300 };
+    [Tooltip("The durations of the timer")]
+    [SerializeField] private int[] timers = new int[] { 60, 120, 180, 240, 300 };
 
     /// <summary>
     /// The index for the timer to be used.
     /// </summary>
     private int timerIndex = 0;
-
-    /*
-    [Range(0, 300)]
-    [Tooltip("The minimum value for the timer in seconds")]
-    [SerializeField] private int minTimerAmount = 30;
-
-    [Range(0, 300)]
-    [Tooltip("The maximum value for the timer in seconds")]
-    [SerializeField] private int maxTimerAmount = 120;
-
-    [Range(0.0f, 1.0f)]
-    [Tooltip("The current lerp between the min and max timer amounts")]
-    [SerializeField] private float currentTimer = 0.5f;*/
     #endregion
 
     #region Red Light Green Light
@@ -107,14 +98,6 @@ public class GameController : MonoBehaviour
     /// The method for generating random intervals between light changes.
     /// </summary>
     private enum RandomNumberMethod { LINEAR, NORMAL };
-    #endregion
-
-    #region Time Before Start
-    [Range(0, 10)]
-    [Tooltip("The count down time before starting")]
-    [SerializeField] private int timeBeforeStart = 3;
-
-    [Space(SPACE_BETWEEN_EDITOR_ELEMENTS)]
     #endregion
 
     #region Red Light Movement Timings
@@ -251,6 +234,13 @@ public class GameController : MonoBehaviour
     {
         InitializeComponents();
 
+        ResetGameEvent.AddListener(ResetGame);
+
+        Piping();
+    }
+
+    private void Piping()
+    {
         var args = System.Environment.GetCommandLineArgs();
         Application.runInBackground = true;
 
@@ -265,18 +255,18 @@ public class GameController : MonoBehaviour
                 {
                     pipeName = args[3];
                 }
-              
+
             }
-           
+
         }
-        
+
         if (pipeName != null)
         {
             pipe = new Subprocess(pipeName);
             pipe.Read();
 
             var msg = pipe.DequeueMessage();
-            
+
         }
     }
 
@@ -294,37 +284,34 @@ public class GameController : MonoBehaviour
         gameController = this;
         audioSource = GetComponent<AudioSource>();
     }
+
+    private void ResetGame()
+    {
+        GoToOffLight();
+        PointUIHandler.ResetPoints();
+        failedRedLights = 0;
+    }
     #endregion
 
     #region Countdown
+    /// <summary>
+    /// Starts the countdown for the game.
+    /// </summary>
     public static void StartCountdown()
     {
         gameController.StartCoroutine(gameController.CountdownLoop());
     }
 
     /// <summary>
-    /// Counts down before starting the game again.
+    /// Handles the countdown funcitonality within the game controller.
     /// </summary>
     /// <returns></returns>
     private IEnumerator CountdownLoop()
     {
         // Sets the initial state
         GoToOffLight();
-        int t = timeBeforeStart;
 
-        CountdownUIHandler.UpdateCountdown(timeBeforeStart);
-
-        #region Countdown Update
-        while (t > 0)
-        {
-            PlaySound(countDownSound, countDownSoundVolume);
-
-            yield return new WaitForSeconds(1);
-
-            t -= 1;
-            CountdownUIHandler.UpdateCountdown(t);
-        }
-        #endregion
+        yield return Countdown.CountdownLoop();
 
         StartRedGreenLoop(true);
 
@@ -360,7 +347,7 @@ public class GameController : MonoBehaviour
             if (t == 3)
             {
                 CountdownUIHandler.ChangeTransparency();
-                CountdownUIHandler.UpdateCountdown(timeBeforeStart);
+                CountdownUIHandler.UpdateCountdown(3);
             }
             else if(t == 0)
             {
@@ -403,6 +390,7 @@ public class GameController : MonoBehaviour
                 break;
             case GameMode.STATIONARY:
             default:
+                if(lightState != LightState.OFF && !TutorialManager.IsPlaying)
                 StartRedGreenLoop(true);    // Starts the process of giving red & green lights
                 break;
         }
@@ -502,6 +490,24 @@ public class GameController : MonoBehaviour
     #endregion
 
     #region Light Change Event
+    public static void LightStateSetter(LightState lightState)
+    {
+        switch (lightState)
+        {
+            case LightState.YELLOW:
+            case LightState.RED:
+                gameController.GoToRedLight();
+                break;
+            case LightState.GREEN:
+                gameController.GoToGreenLight();
+                break;
+            default:
+            case LightState.OFF:
+                gameController.GoToOffLight();
+                break;
+        }
+    }
+
     /// <summary>
     /// Changes the color to off (game inactive state).
     /// </summary>
@@ -583,8 +589,7 @@ public class GameController : MonoBehaviour
     {
         print("------------Output------------");
         print("Times Failed: " + failedRedLights);
-        print("Current Movement Tracking Difficulty: " + CurrentMovementTrackingMethod.ToString());
-        print("Game Mode: " + CurrentGameMode.ToString());
+        print("Movement Threshold Difficulty: " + PlayerMovement.CurrentMovementDifficultyAccessor);
 
         switch (CurrentGameMode)
         {
@@ -631,7 +636,7 @@ public class GameController : MonoBehaviour
 
     public void PlayAgain()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        ResetGameEvent.Invoke();
     }
     #endregion
     #endregion

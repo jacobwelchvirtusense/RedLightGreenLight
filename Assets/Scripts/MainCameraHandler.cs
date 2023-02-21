@@ -25,6 +25,9 @@ public class MainCameraHandler : MonoBehaviour
     /// </summary>
     private static CinemachineBasicMultiChannelPerlin cameraShake;
 
+    /// <summary>
+    /// The instance of the camera handler in the scene.
+    /// </summary>
     private static MainCameraHandler instance;
 
     [Tooltip("The follow target of the camera")]
@@ -33,6 +36,8 @@ public class MainCameraHandler : MonoBehaviour
     private static Transform CameraFollowTarget;
 
     private const float spinSpeed = 20;
+
+    private float startingCameraDistance = 0;
     #endregion
 
     #region Functions
@@ -45,7 +50,24 @@ public class MainCameraHandler : MonoBehaviour
         CameraFollowTarget = cameraFollowTarget;
         mainVirtualCamera = GetComponentInChildren<CinemachineVirtualCamera>();
 
+        var thirdPersonFollow = mainVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
+        startingCameraDistance = thirdPersonFollow.CameraDistance;
+
         if (mainVirtualCamera != null) cameraShake = mainVirtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+
+        GameController.ResetGameEvent.AddListener(ResetCamera);
+    }
+
+    /// <summary>
+    /// Resets any need values back to their defaults for the camera.
+    /// </summary>
+    private void ResetCamera()
+    {
+        StopAllCoroutines();
+        cameraFollowTarget.transform.rotation = Quaternion.identity;
+
+        var thirdPersonFollow = mainVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
+        thirdPersonFollow.CameraDistance = startingCameraDistance;
     }
 
     /// <summary>
@@ -79,6 +101,10 @@ public class MainCameraHandler : MonoBehaviour
         cameraShake.m_FrequencyGain = 0;
     }
 
+    /// <summary>
+    /// Handles the events that animate the camera.
+    /// </summary>
+    /// <param name="animationTag">The tag to call for the correct animation.</param>
     public static void AnimateCamera(string animationTag)
     {
         if(animationTag == "Win")
@@ -87,6 +113,10 @@ public class MainCameraHandler : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Spins the camera upon the game being won.
+    /// </summary>
+    /// <returns></returns>
     private static IEnumerator SpinOnWin()
     {
         var thirdPersonFollow = mainVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();

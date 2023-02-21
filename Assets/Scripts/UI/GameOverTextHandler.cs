@@ -22,6 +22,13 @@ public class GameOverTextHandler : MonoBehaviour
     {
         instance = this;
         gameObject.SetActive(false);
+
+        GameController.ResetGameEvent.AddListener(ResetGameOverText);
+    }
+
+    private void ResetGameOverText()
+    {
+        gameObject.SetActive(false);
     }
 
     public static void ShowText()

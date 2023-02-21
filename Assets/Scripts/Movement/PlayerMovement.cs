@@ -105,6 +105,10 @@ public class PlayerMovement : MonoBehaviour
 
     [Tooltip("The current threshold difficulty for the player's movements")]
     [field:SerializeField] public MovementThresholdDifficulty CurrentMovementDifficulty { get; private set; } = MovementThresholdDifficulty.MEDIUM;
+    public static MovementThresholdDifficulty CurrentMovementDifficultyAccessor { get=>instance.CurrentMovementDifficulty; }
+
+    [SerializeField]
+    private bool isKnee = false;
 
     [Range(0.0f, 10.0f)]
     [Tooltip("The minimum height a patients foot must be raised by")]
@@ -141,24 +145,22 @@ public class PlayerMovement : MonoBehaviour
     [Space(InspectorValues.SPACE_BETWEEN_EDITOR_ELEMENTS)]
 
     [Range(0.0f, 2.0f)]
-    [Tooltip("The input delay between acceptable inputs")]
+    [Tooltip("The minimum speed modifier")]
     [SerializeField] private float minStationarySpeed = 0.5f;
 
     [Range(0.0f, 2.0f)]
-    [Tooltip("The input delay between acceptable inputs")]
+    [Tooltip("The maximum speed modifier")]
     [SerializeField] private float maxStationarySpeed = 1.5f;
 
     [Range(0.0f, 2.0f)]
-    [Tooltip("The input delay between acceptable inputs")]
+    [Tooltip("The average time between steps for the minimum speed mod value")]
     [SerializeField] private float minSpeedAverageTimeBetween = 0.6f;
 
     [Range(0.0f, 2.0f)]
-    [Tooltip("The input delay between acceptable inputs")]
+    [Tooltip("The average time between steps for the maximum speed mod value")]
     [SerializeField] private float maxSpeedAverageTimeBetween = 0.2f;
 
     [Space(InspectorValues.SPACE_BETWEEN_EDITOR_ELEMENTS)]
-
-    // Probably To Delete TODO
 
     [Range(0.0f, 2.0f)]
     [Tooltip("The input delay between acceptable inputs")]
@@ -167,6 +169,32 @@ public class PlayerMovement : MonoBehaviour
     [Range(0.0f, 2.0f)]
     [Tooltip("How long each speed increment is held for")]
     [SerializeField] private float inputSpeedHoldTime = 0.5f;
+
+    [Space(InspectorValues.SPACE_BETWEEN_EDITOR_ELEMENTS)]
+
+    [Header("Speed Lines")]
+    [Tooltip("The particle system that renders the speed lines")]
+    [SerializeField] private ParticleSystem speedLines;
+
+    [Range(0.0f, 1.0f)]
+    [Tooltip("The min threshold for speed lines to appear")]
+    [SerializeField] private float speedLinesThreshold = 0.15f;
+
+    [Range(0.0f, 1.0f)]
+    [Tooltip("The min alpha color for speed lines")]
+    [SerializeField] private float minSpeedLinesAlpha = 0.15f;
+
+    [Range(0.0f, 1.0f)]
+    [Tooltip("The max alpha color for speed lines")]
+    [SerializeField] private float maxSpeedLinesAlpha = 0.8f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The min simulaiton speed of particles for speed lines")]
+    [SerializeField] private float minSpeedLinesSimulation = 0.5f;
+
+    [Range(0.0f, 2.0f)]
+    [Tooltip("The max simulaiton speed of particles for speed lines")]
+    [SerializeField] private float maxSpeedLinesSimulation = 1.0f;
 
     /// <summary>
     /// The current speed modifier for the player.
@@ -221,6 +249,10 @@ public class PlayerMovement : MonoBehaviour
     // Animator ID for winning a race
     private string winAnimaitonTag = "HasWon";
     private int winID;
+
+    // Animator ID for reseting animations
+    private string resetAnimaitonTag = "Reset";
+    private int resetID;
     #endregion
 
     //TODO
@@ -228,8 +260,6 @@ public class PlayerMovement : MonoBehaviour
     private Dictionary<ulong, GameObject> _Bodies = new Dictionary<ulong, GameObject>();
     private BodySourceManager bodyManager;
 
-    [SerializeField]
-    private bool isKnee = false;
     private JointType[] joints;
     private JointType[] kneeJoints = new JointType[]
     {
@@ -253,11 +283,33 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         startingRaceZ = transform.position.z;
+        speedLines.gameObject.SetActive(false);
         instance = this;
+        ResetGameEvent.AddListener(ResetPlayerMovement);
 
         InitializeComponents();
         InitializeDictionaries();
         InitializeAnimationIDs();
+    }
+
+    private void ResetPlayerMovement()
+    {
+        #region Reset Position
+        var pos = transform.position;
+        pos.z = startingRaceZ;
+        transform.position = pos;
+        #endregion
+
+        #region Reset Animation
+        playerAnimator.SetTrigger(resetID);
+        playerAnimator.SetBool(winID, false);
+        playerAnimator.SetBool(walkID, false);
+        playerAnimator.SetBool(breatheID, false);
+        #endregion
+
+        #region Reset Particles
+        speedLines.gameObject.SetActive(false);
+        #endregion
     }
 
     /// <summary>
@@ -293,6 +345,7 @@ public class PlayerMovement : MonoBehaviour
         deathID = Animator.StringToHash(deathAnimationTag);
         winID = Animator.StringToHash(winAnimaitonTag);
         breatheID = Animator.StringToHash(breatheAnimationTag);
+        resetID = Animator.StringToHash(resetAnimaitonTag);
     }
     #endregion
 
@@ -395,23 +448,17 @@ public class PlayerMovement : MonoBehaviour
 
             case GameMode.STATIONARY:
             default:
-                foreach (JointType joint in joints)
+                if(gameController.lightState != LightState.OFF)
                 {
-                    Joint sourceJoint = body.Joints[joint];
-
-                    var height = BodySourceManager.DistanceFrom(sourceJoint.Position);
-                    
-                    /*
-                    if(height > minUpHeightFoot)
+                    foreach (JointType joint in joints)
                     {
-                        //print("Height: " + height);
-                        CheckStateStationary(height);
-                    }*/
+                        Joint sourceJoint = body.Joints[joint];
 
-                    StationaryMovement(sourceJoint, joint, body);
+                        StationaryMovement(sourceJoint, joint, body);
+                    }
+
+                    UpdateCharacterPositionStationary();
                 }
-
-                UpdateCharacterPositionStationary();
                 break;
         }
 
@@ -447,7 +494,7 @@ public class PlayerMovement : MonoBehaviour
 
         if(maxDistance > 0.0254f * 3)
         {
-            print("Failed Wobble Test");
+            //print("Failed Wobble Test");
         }
 
         if (isKnee) return false;
@@ -673,17 +720,35 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #region Speed Modifier
-    private void UpdateStationaryModifier(float modifier)
-    {
-        stationarySpeedModifier += modifier;
-        stationarySpeedModifier = Mathf.Clamp(stationarySpeedModifier, 0.0f, Mathf.Infinity);
-    }
-
     private IEnumerator HoldInput()
     {
         inputTimes.Enqueue(Time.time);
         yield return new WaitForSeconds(inputSpeedHoldTime);
         inputTimes.Dequeue();
+    }
+
+    private float CalculateSpeedModifier()
+    {
+        if (inputTimes.Count == 0) return 0;
+        else if (inputTimes.Count == 1) return minStationarySpeed;
+        else
+        {
+            List<float> timeBetween = new List<float>();
+            var inputTimesList = inputTimes.ToList();
+
+            for (int i = 0; i < inputTimes.Count - 1; i++)
+            {
+                timeBetween.Add(Mathf.Abs(inputTimesList[i] - inputTimesList[i + 1]));
+            }
+
+            /*
+            print("Average: " + timeBetween.Average());
+            print("Count: " + timeBetween.Count);*/
+
+            var inverseLerp = Mathf.InverseLerp(minSpeedAverageTimeBetween, maxSpeedAverageTimeBetween, timeBetween.Average());
+
+            return Mathf.Lerp(minStationarySpeed, maxStationarySpeed, inverseLerp);
+        }
     }
     #endregion
 
@@ -754,16 +819,14 @@ public class PlayerMovement : MonoBehaviour
 
         stationarySpeedModifier = 1;
         stationarySpeedModifier = CalculateSpeedModifier();
-        //print("Stationary Speed Modifier: " + stationarySpeedModifier);
         currentMovementSpeed = Mathf.Lerp(currentMovementSpeed, movementSpeedStationary * StationarySpeedModifier * modifier, Time.fixedDeltaTime*movementSmoothTime);
-
-        //currentMovementSpeed += Time.fixedDeltaTime / movementSmoothTime * modifier * stationarySpeedModifier;
-        //currentMovementSpeed = Mathf.Clamp(currentMovementSpeed, 0.0f, );
 
         // Sets animation active/inactive
         bool isWalking = currentMovementSpeed > movementAnimationThreshold && !hasFailedRedLight && gameController.lightState != LightState.OFF;
         playerAnimator.SetBool(walkID, isWalking);
         playerAnimator.SetBool(breatheID, playerAnimator.GetBool(breatheID) || isWalking);
+
+        CheckSpeedLineState();
 
         if (isWalking)
         {
@@ -771,31 +834,38 @@ public class PlayerMovement : MonoBehaviour
 
             transform.position += transform.forward * Time.fixedDeltaTime * currentMovementSpeed;
         }
-    }
-
-    private float CalculateSpeedModifier()
-    {
-        if (inputTimes.Count == 0) return 0;
-        else if (inputTimes.Count == 1) return minStationarySpeed;
         else
         {
-            List<float> timeBetween = new List<float>();
-            var inputTimesList = inputTimes.ToList();
-
-            for (int i = 0; i < inputTimes.Count-1; i++)
-            {
-                timeBetween.Add(Mathf.Abs(inputTimesList[i]-inputTimesList[i+1]));
-            }
-
-            print("Average: " + timeBetween.Average());
-            print("Count: " + timeBetween.Count);
-
-            var inverseLerp = Mathf.InverseLerp(minSpeedAverageTimeBetween, maxSpeedAverageTimeBetween, timeBetween.Average());
-
-            print("Inverse: " + inverseLerp);
-
-            return Mathf.Lerp(minStationarySpeed, maxStationarySpeed, inverseLerp);
+            speedLines.gameObject.SetActive(false);
         }
+    }
+
+    private void CheckSpeedLineState()
+    {
+        var inverseSpeedLerp = Mathf.InverseLerp(minStationarySpeed, maxStationarySpeed, StationarySpeedModifier);
+
+        if (inverseSpeedLerp >= speedLinesThreshold)
+        {
+            speedLines.gameObject.SetActive(true);
+            SetSpeedLines(inverseSpeedLerp);
+        }
+        else
+        {
+            speedLines.gameObject.SetActive(false);
+        }
+    }
+
+    private void SetSpeedLines(float lerp)
+    {
+        print("Inverse: " + lerp);
+
+        var minColor = Color.white;
+        minColor.a = minSpeedLinesAlpha;
+        var maxColor = Color.white;
+        maxColor.a = maxSpeedLinesAlpha;
+
+        speedLines.startColor = Color.Lerp(minColor, maxColor, lerp);
+        speedLines.playbackSpeed = Mathf.Lerp(minSpeedLinesSimulation, maxSpeedLinesSimulation, lerp);
     }
     #endregion
     #endregion
@@ -810,12 +880,19 @@ public class PlayerMovement : MonoBehaviour
             transform.position = zPos;
         }
 
+        speedLines.gameObject.SetActive(false);
+
         playerAnimator.SetInteger("Dance Number", UnityEngine.Random.Range(0, 5));
         playerAnimator.SetBool(winID, true);
     }
     #endregion
 
     #region Fail Event
+    public static void ForceRedLightFail()
+    {
+        instance.StartCoroutine(instance.FailRedLight());
+    }
+
     /// <summary>
     /// Handles the event of failing a red light.
     /// </summary>
@@ -838,7 +915,13 @@ public class PlayerMovement : MonoBehaviour
         }
         #endregion
 
+        if(!TutorialManager.IsPlaying)
         hasFailedRedLight = false;
+    }
+
+    public static void AllowMovementAgain()
+    {
+        instance.hasFailedRedLight = false;
     }
     #endregion
     #endregion

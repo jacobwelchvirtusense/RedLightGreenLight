@@ -43,7 +43,7 @@ public class DuplicateNpc : MonoBehaviour
         {
             var copy = Instantiate(gameObject, transform.position + new Vector3(0, 0, 229.8f), Quaternion.identity);
             var animationDelay = Random.Range(0.0f, 2.0f);
-            var animationNumber = Random.Range(1, 7);
+            var animationNumber = Random.Range(1, 12);
 
             StartCoroutine(InitializeAnimation(animationDelay, animationNumber));
 

@@ -36,6 +36,15 @@ public class WinMusicHandler : MonoBehaviour
     {
         instance = this;
         audioSource = GetComponent<AudioSource>();
+
+        GameController.ResetGameEvent.AddListener(ResetMusic);
+    }
+
+    private void ResetMusic()
+    {
+        if (instance == null || audioSource == null || instance.MusicClips.Length == 0) return;
+
+        audioSource.Stop();
     }
 
     /// <summary>

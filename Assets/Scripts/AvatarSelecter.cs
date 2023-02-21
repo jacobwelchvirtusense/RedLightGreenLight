@@ -25,8 +25,12 @@ public class AvatarSelecter : MonoBehaviour
     #region Functions
     private void Awake()
     {
-        if(!gameObject.name.Contains("Clone"))
-        InitializeAvatar();
+        if (!gameObject.name.Contains("Clone"))
+        {
+            InitializeAvatar();
+
+            GameController.ResetGameEvent.AddListener(InitializeAvatar);
+        }
     }
 
     public void InitializeAvatar()

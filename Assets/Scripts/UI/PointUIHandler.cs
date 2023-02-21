@@ -34,12 +34,19 @@ public class PointUIHandler : MonoBehaviour
     private void Awake()
     {
         PointsText.Add(GetComponent<TextMeshProUGUI>());
+        currentPoints = 0;
         UpdatePoints(0);
     }
 
     private void Start()
     {
         gameObject.SetActive(CurrentGameMode != GameMode.RACE);
+    }
+
+    public static void ResetPoints()
+    {
+        currentPoints = 0;
+        UpdatePoints(0);
     }
 
     /// <summary>
