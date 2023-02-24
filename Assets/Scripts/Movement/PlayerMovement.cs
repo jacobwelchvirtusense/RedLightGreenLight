@@ -817,7 +817,6 @@ public class PlayerMovement : MonoBehaviour
     {
         var modifier = currentMovementDuration != 0 ? 1 : 0;
 
-        stationarySpeedModifier = 1;
         stationarySpeedModifier = CalculateSpeedModifier();
         currentMovementSpeed = Mathf.Lerp(currentMovementSpeed, movementSpeedStationary * StationarySpeedModifier * modifier, Time.fixedDeltaTime*movementSmoothTime);
 
