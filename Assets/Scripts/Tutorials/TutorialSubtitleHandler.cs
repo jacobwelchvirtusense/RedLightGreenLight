@@ -34,20 +34,7 @@ public class TutorialSubtitleHandler : MonoBehaviour
 
         var subtileValid = subtitle != "";
         instance.gameObject.SetActive(subtileValid);
-        if(subtileValid) instance.StartCoroutine(instance.SubtitleRoutine(subtitle));
-    }
-
-    private IEnumerator SubtitleRoutine(string subtitle)
-    {
-        if (subtitleText == null) yield break;
-
-        subtitleText.text = "";
-
-        foreach (char c in subtitle)
-        {
-            subtitleText.text += c;
-            yield return new WaitForSeconds(timeBetweenCharacters);
-        }
+        instance.subtitleText.text = subtitle;
     }
     #endregion
 }

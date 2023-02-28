@@ -41,6 +41,8 @@ public class DuplicateNpc : MonoBehaviour
     {
         if (!gameObject.name.Contains("Clone"))
         {
+            //GameController.ResetGameEvent.AddListener(InitializeAvatar);
+
             var copy = Instantiate(gameObject, transform.position + new Vector3(0, 0, 229.8f), Quaternion.identity);
             var animationDelay = Random.Range(0.0f, 2.0f);
             var animationNumber = Random.Range(1, 12);
