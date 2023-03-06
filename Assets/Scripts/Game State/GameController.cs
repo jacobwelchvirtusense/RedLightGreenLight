@@ -19,6 +19,7 @@ using UnityEngine.SocialPlatforms.Impl;
 
 using Assets.Scripts;
 using System.Threading;
+using com.rfilkov.kinect;
 
 [RequireComponent(typeof(AudioSource))]
 public class GameController : MonoBehaviour
@@ -235,8 +236,19 @@ public class GameController : MonoBehaviour
         InitializeComponents();
 
         ResetGameEvent.AddListener(ResetGame);
+        ResetGameEvent.AddListener(ResetSensorDataDisplay);
 
         Piping();
+    }
+
+    private void ResetSensorDataDisplay()
+    {
+        var KinectManager = FindObjectOfType<KinectManager>();
+
+        if(KinectManager != null)
+        {
+            KinectManager.shouldDisplaySensorData = true;
+        }
     }
 
     private void Piping()
