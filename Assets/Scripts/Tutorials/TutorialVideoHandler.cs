@@ -10,14 +10,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
 
 public class TutorialVideoHandler : MonoBehaviour
 {
     #region Fields
     private static TutorialVideoHandler instance;
 
-    [Tooltip("The game object that holds the movement tutorial video")]
-    [SerializeField] private GameObject movementTutorial;
+    /// <summary>
+    /// The player of all tutorial videos.
+    /// </summary>
+    private VideoPlayer videoPlayer;
+
+    [Tooltip("If this video is sent then the last selected video will be kept")]
+    [SerializeField] private VideoClip repeatLastVideoClip;
     #endregion
 
     #region Functions
@@ -26,28 +32,30 @@ public class TutorialVideoHandler : MonoBehaviour
     {
         instance = this;
 
+        videoPlayer = GetComponentInChildren<VideoPlayer>();
+
         GameController.ResetGameEvent.AddListener(ResetTutorialVideo);
         gameObject.SetActive(false);
     }
 
     private void ResetTutorialVideo()
     {
-        SetVideo("None");
+        SetVideo(null);
     }
 
-    public static void SetVideo(string video)
+    public static void SetVideo(VideoClip video)
     {
-        switch (video)
+        if (instance.repeatLastVideoClip == video) return;
+
+        else if (video == null)
         {
-            case "Movement":
-                instance.gameObject.SetActive(true);
-                instance.movementTutorial.SetActive(true);
-                break;
-            case "None":
-            default:
-                instance.movementTutorial.SetActive(false);
-                instance.gameObject.SetActive(false);
-                break;
+            //instance.movementTutorial.SetActive(false);
+            instance.gameObject.SetActive(false);
+        }
+        else if (video != instance.videoPlayer.clip)
+        {
+            instance.videoPlayer.clip = video;
+            instance.gameObject.SetActive(true);
         }
     }
     #endregion

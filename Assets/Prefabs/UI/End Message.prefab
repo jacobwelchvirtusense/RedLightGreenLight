@@ -817,7 +817,8 @@ MonoBehaviour:
     m_HighlightedSprite: {fileID: 2069807957, guid: 9fab17f0ccf87644183e8ba2db31477f,
       type: 3}
     m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 2069807957, guid: 9fab17f0ccf87644183e8ba2db31477f,
+      type: 3}
     m_DisabledSprite: {fileID: 0}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
@@ -1099,7 +1100,8 @@ MonoBehaviour:
     m_HighlightedSprite: {fileID: 868538917, guid: 4cf5aee6e2705584789553dd9b30d022,
       type: 3}
     m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 868538917, guid: 4cf5aee6e2705584789553dd9b30d022,
+      type: 3}
     m_DisabledSprite: {fileID: 0}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
@@ -1497,6 +1499,7 @@ GameObject:
   - component: {fileID: 4695887050211219111}
   - component: {fileID: 4695887050211219109}
   - component: {fileID: 570939415421939966}
+  - component: {fileID: 6637053566354278142}
   m_Layer: 5
   m_Name: End Message
   m_TagString: Untagged
@@ -1551,6 +1554,19 @@ MonoBehaviour:
   averageSpeed: {fileID: 6734580577487900670}
   redLightsFailed: {fileID: 2760767494484382965}
   metersLost: {fileID: 6578962846250541246}
+--- !u!114 &6637053566354278142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4695887050211219160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3c2a76b3628a4c47b83c96e3a3e7fa3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickSound: {fileID: 8300000, guid: 8de57d4b19ec68246931f81f250a37f6, type: 3}
 --- !u!1 &4798403783337894911
 GameObject:
   m_ObjectHideFlags: 0

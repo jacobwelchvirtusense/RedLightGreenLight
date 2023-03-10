@@ -914,8 +914,16 @@ public class PlayerMovement : MonoBehaviour
         }
         #endregion
 
-        if(!TutorialManager.IsPlaying)
-        hasFailedRedLight = false;
+        if (TutorialManager.IsPlaying)
+        {
+            while (gameController.lightState != LightState.GREEN) yield return new WaitForFixedUpdate();
+
+            hasFailedRedLight = false;
+        }
+        else
+        {
+            hasFailedRedLight = false;
+        }
     }
 
     public static void AllowMovementAgain()

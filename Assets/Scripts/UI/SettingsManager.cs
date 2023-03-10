@@ -7,6 +7,7 @@
  * 
  * Description: Handles the inputs into the settings menu and hooks to its changes.
 *********************************/
+using com.rfilkov.kinect;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -104,6 +105,18 @@ public class SettingsManager : MonoBehaviour
         settingsSlots[currentSettingsSlot].SetHover(true);
 
         InitializeSettings();
+    }
+    #endregion
+
+    #region Show Sensor Data
+    private void OnEnable()
+    {
+        FindObjectOfType<KinectManager>().shouldDisplaySensorData = true;
+    }
+
+    private void OnDisable()
+    {
+        FindObjectOfType<KinectManager>().shouldDisplaySensorData = false;
     }
     #endregion
 

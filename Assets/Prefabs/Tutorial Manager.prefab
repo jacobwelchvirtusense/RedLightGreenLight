@@ -45,29 +45,80 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f286d3b850c40240b36c13278538957, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementTutorialDistance: 25
+  tutorialElements:
+  - <TutorialName>k__BackingField: Welcome
+    <SubtitleText>k__BackingField: Welcome to Red Light Green Light!!!
+    <videoClip>k__BackingField: {fileID: 0}
+    <AudioDialogue>k__BackingField: {fileID: 8300000, guid: 40436dec50fc09d4ca5e15d0a1e48c24,
+      type: 3}
+    <DialogueVolume>k__BackingField: 1
+    <DelayAfter>k__BackingField: 1
+    <TutorialBranchReason>k__BackingField: 0
+    <DialogueInterruption>k__BackingField: 0
+    <PreTutorialEvent>k__BackingField: 0
+    <PostTutorialEvent>k__BackingField: 0
+  - <TutorialName>k__BackingField: Lights Tutorial
+    <SubtitleText>k__BackingField: During this training, you will be given both red
+      and green lights.
+    <videoClip>k__BackingField: {fileID: 0}
+    <AudioDialogue>k__BackingField: {fileID: 8300000, guid: e4d0b1cf49f822c4dac14d31697671bb,
+      type: 3}
+    <DialogueVolume>k__BackingField: 1
+    <DelayAfter>k__BackingField: 1.5
+    <TutorialBranchReason>k__BackingField: 0
+    <DialogueInterruption>k__BackingField: 0
+    <PreTutorialEvent>k__BackingField: 0
+    <PostTutorialEvent>k__BackingField: 0
+  - <TutorialName>k__BackingField: Red Light Tutorial
+    <SubtitleText>k__BackingField: You should stand still during red lights, otherwise
+      you will lose distance
+    <videoClip>k__BackingField: {fileID: 0}
+    <AudioDialogue>k__BackingField: {fileID: 8300000, guid: dff185a67f1b8ca4facf62c04409b09a,
+      type: 3}
+    <DialogueVolume>k__BackingField: 1
+    <DelayAfter>k__BackingField: 1.5
+    <TutorialBranchReason>k__BackingField: 0
+    <DialogueInterruption>k__BackingField: 0
+    <PreTutorialEvent>k__BackingField: 1
+    <PostTutorialEvent>k__BackingField: 0
+  - <TutorialName>k__BackingField: Green Light Tutorial
+    <SubtitleText>k__BackingField: During green lights, walk/run in-place to move
+      your character forward
+    <videoClip>k__BackingField: {fileID: 0}
+    <AudioDialogue>k__BackingField: {fileID: 8300000, guid: 06aa654bb82ec1742825fa8140fa2aea,
+      type: 3}
+    <DialogueVolume>k__BackingField: 1
+    <DelayAfter>k__BackingField: 0
+    <TutorialBranchReason>k__BackingField: 0
+    <DialogueInterruption>k__BackingField: 0
+    <PreTutorialEvent>k__BackingField: 2
+    <PostTutorialEvent>k__BackingField: 1
+  - <TutorialName>k__BackingField: Move faster
+    <SubtitleText>k__BackingField: 'Walking-in place faster will also move your character
+      faster. '
+    <videoClip>k__BackingField: {fileID: 0}
+    <AudioDialogue>k__BackingField: {fileID: 8300000, guid: 07fec25a048eec142aab86479683b9d2,
+      type: 3}
+    <DialogueVolume>k__BackingField: 1
+    <DelayAfter>k__BackingField: 1.5
+    <TutorialBranchReason>k__BackingField: 0
+    <DialogueInterruption>k__BackingField: 0
+    <PreTutorialEvent>k__BackingField: 0
+    <PostTutorialEvent>k__BackingField: 0
+  - <TutorialName>k__BackingField: Timing
+    <SubtitleText>k__BackingField: Try to get the best distance you can before the
+      time runs out!
+    <videoClip>k__BackingField: {fileID: 0}
+    <AudioDialogue>k__BackingField: {fileID: 8300000, guid: 4a75f3cd655a6144aa50e1d27fa1a196,
+      type: 3}
+    <DialogueVolume>k__BackingField: 1
+    <DelayAfter>k__BackingField: 1.5
+    <TutorialBranchReason>k__BackingField: 0
+    <DialogueInterruption>k__BackingField: 0
+    <PreTutorialEvent>k__BackingField: 0
+    <PostTutorialEvent>k__BackingField: 0
+  movementTutorialDistance: 5
   lightDelays: 1
-  delayAfterMovementTutorial: 1.5
-  delayAfterRedLightTutorial: 1.5
-  delayAfterGreenLightTutorial: 1.5
-  delayAfterMoveFaster: 1.5
-  delayAtEnd: 1.5
-  movementSubtitle: Walk/run in-place to move your character forward
-  redLightSubtitle: Stop moving during red lights otherwise you will lose distance
-  greenLightSubtitle: You should move during green lights
-  moveFasterSubtitle: 'Walking-in place faster will also move your character faster. '
-  timingSubtitle: Try to get the best distance you can before the time runs out!
-  movementTutorialDialogue: {fileID: 8300000, guid: 073ba68a135ca1049a3b0f49867b9466,
-    type: 3}
-  movementTutorialDialogueVolume: 1
-  redLightDialogue: {fileID: 8300000, guid: a7e95ceec36b1d74f8c550a18ba63327, type: 3}
-  redLightDialogueVolume: 1
-  greenLightDialogue: {fileID: 8300000, guid: 47a435c3dc511b646bcbe655b43dd382, type: 3}
-  greenLightDialogueVolume: 1
-  moveFasterDialogue: {fileID: 8300000, guid: f765c4a2b0121f644a9346b355cce3d9, type: 3}
-  moveFasterDialogueVolume: 1
-  timingDialogue: {fileID: 8300000, guid: ce355e0879fd9b44ca99dfdd52d18e5d, type: 3}
-  timingDialogueVolume: 1
 --- !u!82 &318172233786177818
 AudioSource:
   m_ObjectHideFlags: 0
